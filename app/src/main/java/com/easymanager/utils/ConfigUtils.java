@@ -32,6 +32,10 @@ import java.util.Set;
 public class ConfigUtils {
 
     public static final String CONFIG_FILE_NAME = "lightBreeze_pkg.json";
+    public static final String DISABLE_PKGS = "disablePkgs";
+    public static final String UNINSTALL_PKGS = "uninstallPkgs";
+    public static final String DISABLE_FIREWALL_PKGS = "disableFirewallPkgs";
+    public static final String DISABLE_SENSORS_PKGS = "disableSensorsPkgs";
     public static final int MENU_IMPORT_CONFIG = 1001;
     public static final int MENU_EXPORT_CONFIG = 1002;
 
@@ -39,63 +43,89 @@ public class ConfigUtils {
 
     // --- JSON Config (LightBreeze) ---
 
-    public void savePkgsToConfig(Context context, ArrayList<PKGINFO> list, boolean isDisable) {
+    public JSONObject getConfigJSONObject(Context context) {
+        File configFile = new File(context.getFilesDir(), CONFIG_FILE_NAME);
+        if (!configFile.exists()) return new JSONObject();
+        try {
+            FileInputStream fis = new FileInputStream(configFile);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fis, "UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+            reader.close();
+            return new JSONObject(sb.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new JSONObject();
+        }
+    }
+
+    public void saveConfigJSONObject(Context context, JSONObject jsonObject) {
         try {
             File configFile = new File(context.getFilesDir(), CONFIG_FILE_NAME);
-            LightBreezeConfig config = new LightBreezeConfig();
-
-            if (configFile.exists()) {
-                FileInputStream fis = new FileInputStream(configFile);
-                BufferedReader reader = new BufferedReader(new InputStreamReader(fis, "UTF-8"));
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line);
-                }
-                reader.close();
-
-                JSONObject jsonObject = new JSONObject(sb.toString());
-                if (jsonObject.has("disablePkgs")) {
-                    JSONArray disableArray = jsonObject.getJSONArray("disablePkgs");
-                    ArrayList<String> disablePkgs = new ArrayList<>();
-                    for (int i = 0; i < disableArray.length(); i++) {
-                        disablePkgs.add(disableArray.getString(i));
-                    }
-                    config.setDisablePkgs(disablePkgs);
-                }
-                if (jsonObject.has("uninstallPkgs")) {
-                    JSONArray uninstallArray = jsonObject.getJSONArray("uninstallPkgs");
-                    ArrayList<String> uninstallPkgs = new ArrayList<>();
-                    for (int i = 0; i < uninstallArray.length(); i++) {
-                        uninstallPkgs.add(uninstallArray.getString(i));
-                    }
-                    config.setUninstallPkgs(uninstallPkgs);
-                }
-            }
-
-            Set<String> pkgSet;
-            if (isDisable) {
-                pkgSet = new HashSet<>(config.getDisablePkgs());
-                for (PKGINFO info : list) pkgSet.add(info.getPkgname());
-                config.setDisablePkgs(new ArrayList<>(pkgSet));
-            } else {
-                pkgSet = new HashSet<>(config.getUninstallPkgs());
-                for (PKGINFO info : list) pkgSet.add(info.getPkgname());
-                config.setUninstallPkgs(new ArrayList<>(pkgSet));
-            }
-
-            JSONObject outJson = new JSONObject();
-            JSONArray disableArray = new JSONArray(config.getDisablePkgs());
-            JSONArray uninstallArray = new JSONArray(config.getUninstallPkgs());
-            outJson.put("disablePkgs", disableArray);
-            outJson.put("uninstallPkgs", uninstallArray);
-
             FileOutputStream fos = new FileOutputStream(configFile);
-            fos.write(outJson.toString().getBytes("UTF-8"));
+            fos.write(jsonObject.toString().getBytes("UTF-8"));
             fos.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public ArrayList<String> getPkgsFromConfig(Context context, String key) {
+        JSONObject jsonObject = getConfigJSONObject(context);
+        ArrayList<String> pkgs = new ArrayList<>();
+        try {
+            if (jsonObject.has(key)) {
+                JSONArray array = jsonObject.getJSONArray(key);
+                for (int i = 0; i < array.length(); i++) {
+                    pkgs.add(array.getString(i));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return pkgs;
+    }
+
+    public void savePkgsToConfig(Context context, String key, ArrayList<String> pkgs) {
+        try {
+            JSONObject jsonObject = getConfigJSONObject(context);
+            jsonObject.put(key, new JSONArray(pkgs));
+            saveConfigJSONObject(context, jsonObject);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateDisablePkgs(Context context, ArrayList<PKGINFO> list, boolean isAdd) {
+        updatePkgsInConfig(context, list, DISABLE_PKGS, isAdd);
+    }
+
+    public void updateUninstallPkgs(Context context, ArrayList<PKGINFO> list, boolean isAdd) {
+        updatePkgsInConfig(context, list, UNINSTALL_PKGS, isAdd);
+    }
+
+    public void updateFirewallPkgs(Context context, ArrayList<PKGINFO> list, boolean isAdd) {
+        updatePkgsInConfig(context, list, DISABLE_FIREWALL_PKGS, isAdd);
+    }
+
+    public void updateSensorsPkgs(Context context, ArrayList<PKGINFO> list, boolean isAdd) {
+        updatePkgsInConfig(context, list, DISABLE_SENSORS_PKGS, isAdd);
+    }
+
+    private void updatePkgsInConfig(Context context, ArrayList<PKGINFO> list, String key, boolean isAdd) {
+        ArrayList<String> currentPkgs = getPkgsFromConfig(context, key);
+        Set<String> pkgSet = new HashSet<>(currentPkgs);
+        for (PKGINFO info : list) {
+            if (isAdd) {
+                pkgSet.add(info.getPkgname());
+            } else {
+                pkgSet.remove(info.getPkgname());
+            }
+        }
+        savePkgsToConfig(context, key, new ArrayList<>(pkgSet));
     }
 
     public void exportConfig(Context context) {
@@ -137,27 +167,30 @@ public class ConfigUtils {
 
             JSONObject jsonObject = new JSONObject(sb.toString());
             LightBreezeConfig config = new LightBreezeConfig();
-            if (jsonObject.has("disablePkgs")) {
-                JSONArray disableArray = jsonObject.getJSONArray("disablePkgs");
-                ArrayList<String> disablePkgs = new ArrayList<>();
-                for (int i = 0; i < disableArray.length(); i++) {
-                    disablePkgs.add(disableArray.getString(i));
-                }
-                config.setDisablePkgs(disablePkgs);
-            }
-            if (jsonObject.has("uninstallPkgs")) {
-                JSONArray uninstallArray = jsonObject.getJSONArray("uninstallPkgs");
-                ArrayList<String> uninstallPkgs = new ArrayList<>();
-                for (int i = 0; i < uninstallArray.length(); i++) {
-                    uninstallPkgs.add(uninstallArray.getString(i));
-                }
-                config.setUninstallPkgs(uninstallPkgs);
-            }
+            config.setDisablePkgs(getPkgsFromJSONObject(jsonObject, DISABLE_PKGS));
+            config.setUninstallPkgs(getPkgsFromJSONObject(jsonObject, UNINSTALL_PKGS));
+            config.setDisableFirewallPkgs(getPkgsFromJSONObject(jsonObject, DISABLE_FIREWALL_PKGS));
+            config.setDisableSensorsPkgs(getPkgsFromJSONObject(jsonObject, DISABLE_SENSORS_PKGS));
             return config;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private ArrayList<String> getPkgsFromJSONObject(JSONObject jsonObject, String key) {
+        ArrayList<String> pkgs = new ArrayList<>();
+        try {
+            if (jsonObject.has(key)) {
+                JSONArray array = jsonObject.getJSONArray(key);
+                for (int i = 0; i < array.length(); i++) {
+                    pkgs.add(array.getString(i));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return pkgs;
     }
 
     // --- XML Config (Legacy/Core) ---

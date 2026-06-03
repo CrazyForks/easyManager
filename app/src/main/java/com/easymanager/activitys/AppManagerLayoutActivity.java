@@ -30,7 +30,7 @@ import android.widget.Toast;
 
 import com.easymanager.R;
 import com.easymanager.core.entity.TransmissionEntity;
-import com.easymanager.entitys.LightBreezeConfig;
+import com.easymanager.core.enums.AppopsPermissionStr;
 import com.easymanager.entitys.PKGINFO;
 import com.easymanager.enums.AppManagerEnum;
 import com.easymanager.enums.easyManagerEnums;
@@ -196,21 +196,25 @@ public class AppManagerLayoutActivity extends BaseActivity {
                         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP){
                             acu.getUd().showInfoMsg(context,getLanStr(R.string.tips),getLanStr(R.string.not_support_5));
                         }else{
+                            if(APP_PERMIS_INDEX == AppopsPermissionStr.SENSORSSCAN) {
+                                configUtils.updateSensorsPkgs(context, list , APP_PERMIS_OPT_INDEX == 2);
+                            }
                             acu.getPd().showProcessBarDialogByCMD(context,list,AppManagerEnum.APP_PERMISSION,APP_PERMIS_INDEX,opt_str,uid);
                         }
                     }
 
                     if(mode == AppManagerEnum.APP_DISABLE_COMPENT){
-                        configUtils.savePkgsToConfig(context, list, true);
+                        configUtils.updateDisablePkgs(context, list, APP_PERMIS_OPT_INDEX == 1);
                         acu.getPd().showProcessBarDialogByCMD(context,list,AppManagerEnum.APP_DISABLE_COMPENT,APP_PERMIS_OPT_INDEX,null,uid);
                     }
 
                     if(mode == AppManagerEnum.APP_RESTORE_UNINSTALL_APP){
-                        configUtils.savePkgsToConfig(context, list, false);
+                        configUtils.updateUninstallPkgs(context, list, false);
                         acu.getPd().showProcessBarDialogByCMD(context,list,AppManagerEnum.APP_RESTORE_UNINSTALL_APP,APP_PERMIS_OPT_INDEX,null,uid);
                     }
 
                     if(mode == AppManagerEnum.APP_FIREWALL){
+                        configUtils.updateFirewallPkgs(context, list, APP_PERMIS_OPT_INDEX == 1);
                         acu.getPd().showProcessBarDialogByCMD(context,list,AppManagerEnum.APP_FIREWALL,APP_PERMIS_OPT_INDEX,null,uid);
                     }
 
@@ -218,16 +222,12 @@ public class AppManagerLayoutActivity extends BaseActivity {
                         acu.getPd().showProcessBarDialogByCMD(context,list,AppManagerEnum.APP_INSTALL_LOCAL_FILE,APP_PERMIS_OPT_INDEX,null,uid);
                     }
 
-                    if(mode == AppManagerEnum.APP_RESTORE_UNINSTALL_APP){
-                        acu.getPd().showProcessBarDialogByCMD(context,list,AppManagerEnum.APP_RESTORE_UNINSTALL_APP,APP_PERMIS_OPT_INDEX,null,uid);
-                    }
-
                     if(mode == AppManagerEnum.APP_DUMP){
                         acu.getPd().showProcessBarDialogByCMD(context,list,AppManagerEnum.APP_DUMP,APP_PERMIS_OPT_INDEX,null,uid);
                     }
 
                     if(mode == AppManagerEnum.APP_UNINSTALL){
-                        configUtils.savePkgsToConfig(context, list, false);
+                        configUtils.updateUninstallPkgs(context, list, true);
                         acu.getPd().showProcessBarDialogByCMD(context,list,AppManagerEnum.APP_UNINSTALL,APP_PERMIS_OPT_INDEX,null,uid);
                         if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.M){
                             easyManagerUtils ee = new easyManagerUtils();
@@ -346,6 +346,7 @@ public class AppManagerLayoutActivity extends BaseActivity {
                             }else{
                                 APP_PERMIS_MODE=0;
                                 amlsp2.setAdapter(getSpinnerAdapter(getAppPermisOPT1()));
+                                amlsp2.setSelection(2);
                             }
                         }
                         break;
@@ -425,6 +426,7 @@ public class AppManagerLayoutActivity extends BaseActivity {
                                     amlsp1.setEnabled(true);
                                     amlsp2.setEnabled(true);
                                     amlsp2.setAdapter(getSpinnerAdapter(getAppPermisOPT1()));
+                                    amlsp2.setSelection(2);
                                     break;
                                 case 1:
                                     mode = AppManagerEnum.APP_DISABLE_COMPENT;
@@ -489,10 +491,14 @@ public class AppManagerLayoutActivity extends BaseActivity {
     public boolean onPrepareOptionsMenu(Menu menu) {
         OtherTools otherTools = new OtherTools();
         otherTools.addMenuBase(this,menu,mode);
-        if(mode == AppManagerEnum.APP_UNINSTALL || mode == AppManagerEnum.APP_DISABLE_COMPENT || mode == AppManagerEnum.APP_RESTORE_UNINSTALL_APP){
+        if(mode == AppManagerEnum.APP_UNINSTALL || mode == AppManagerEnum.APP_DISABLE_COMPENT
+                || mode == AppManagerEnum.APP_RESTORE_UNINSTALL_APP || mode == AppManagerEnum.APP_FIREWALL
+                || (mode == AppManagerEnum.APP_PERMISSION && APP_PERMIS_INDEX == AppopsPermissionStr.SENSORSSCAN)){
             menu.add(Menu.NONE, ConfigUtils.MENU_IMPORT_CONFIG, 0, getLanStr(R.string.menu_import_config));
             menu.add(Menu.NONE, ConfigUtils.MENU_EXPORT_CONFIG, 0, getLanStr(R.string.menu_export_config));
         }
+//        menu.add(Menu.NONE, ConfigUtils.MENU_IMPORT_CONFIG, 0, getLanStr(R.string.menu_import_config));
+//        menu.add(Menu.NONE, ConfigUtils.MENU_EXPORT_CONFIG, 0, getLanStr(R.string.menu_export_config));
         getMenuInflater().inflate(R.menu.main,menu);
         return super.onPrepareOptionsMenu(menu);
     }
@@ -700,7 +706,7 @@ public class AppManagerLayoutActivity extends BaseActivity {
             }
         }
 
-        if(requestCode == 1001 && data != null && data.getData() != null){
+        if(requestCode == ConfigUtils.MENU_IMPORT_CONFIG && data != null && data.getData() != null){
             importConfig(data.getData());
         }
     }
@@ -779,41 +785,7 @@ public class AppManagerLayoutActivity extends BaseActivity {
     }
 
     private void importConfig(Uri uri) {
-        try {
-            String storage = ft.getSDPath(uid);
-            LightBreezeConfig config = configUtils.loadJSONConfig(context, uri);
-            if (config == null) return;
-
-            ArrayList<String> targetPkgs = (mode == AppManagerEnum.APP_DISABLE_COMPENT) ? config.getDisablePkgs() : config.getUninstallPkgs();
-            if (targetPkgs == null || targetPkgs.isEmpty()) {
-                Toast.makeText(context, getLanStr(R.string.import_config_error), Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            PackageManager pm = getPackageManager();
-            packageUtils.clearList(pkginfos, checkboxs);
-            for (String pkg : targetPkgs) {
-                try {
-                    PackageInfo pi = null;
-                    if (mode == AppManagerEnum.APP_RESTORE_UNINSTALL_APP || mode == AppManagerEnum.APP_UNINSTALL) {
-                        pi = pm.getPackageInfo(pkg, PackageManager.GET_UNINSTALLED_PACKAGES);
-                    } else {
-                        pi = pm.getPackageInfo(pkg, 0);
-                    }
-
-                    if (pi != null) {
-                        PKGINFO info = packageUtils.getPKGINFO(context, pkg);
-                        pkginfos.add(info);
-                        checkboxs.add(true);
-                    }
-                } catch (Exception e) {
-                }
-            }
-            acu.getSd().showPKGS(context, apllv1, pkginfos, checkboxs);
-            Toast.makeText(context, getLanStr(R.string.import_config_ok), Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        acu.getSd().queryImportPKGProcessDialog(context,activity,getLanStr(R.string.general_loading),apllv1,pkginfos,checkboxs,mode,uid,uri,APP_PERMIS_INDEX,false);
     }
 
     private String getADDCleanRunningAPPOPTSTR(){

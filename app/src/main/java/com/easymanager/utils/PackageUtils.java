@@ -8,12 +8,14 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 
+import com.easymanager.core.enums.AppopsPermissionStr;
 import com.easymanager.entitys.MyActivityInfo;
 import com.easymanager.entitys.MyApplicationInfo;
 import com.easymanager.entitys.MyAppopsInfo;
 import com.easymanager.entitys.MyPackageInfo;
 import com.easymanager.core.entity.TransmissionEntity;
 import com.easymanager.entitys.PKGINFO;
+import com.easymanager.enums.AppManagerEnum;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -467,4 +469,42 @@ public class PackageUtils {
         sortPKGINFOS(pkginfos);
 
     }
+
+    public void queryImportPkgs(Context context, int uid , ArrayList<String> pkglist,int mode , int APP_PERMIS_INDEX){
+        PackageManager pm = context.getPackageManager();
+        for (String pkg : pkglist) {
+            try {
+                PackageInfo pi = null;
+                if (mode == AppManagerEnum.APP_RESTORE_UNINSTALL_APP || mode == AppManagerEnum.APP_UNINSTALL) {
+                    pi = pm.getPackageInfo(pkg, PackageManager.GET_UNINSTALLED_PACKAGES);
+                } else {
+                    pi = pm.getPackageInfo(pkg, 0);
+                }
+
+                if (pi != null) {
+                    PKGINFO info = getPKGINFO(context, pkg);
+                    if(mode == AppManagerEnum.APP_DISABLE_COMPENT){
+                        ee.setDisablePKG(context,info.getPkgname(),uid);
+                    }
+
+                    if(mode == AppManagerEnum.APP_FIREWALL){
+                        ee.setFirewallState(context, info.getPkgname(),uid, false);
+                    }
+
+                    if(mode == AppManagerEnum.APP_UNINSTALL){
+                        ee.uninstallAPK(context,info.getPkgname(),uid);
+                    }
+
+                    if (mode == AppManagerEnum.APP_PERMISSION && APP_PERMIS_INDEX == AppopsPermissionStr.SENSORSSCAN){
+                        ee.setSkipError(true);
+                        ee.setAppopsMode(new TransmissionEntity(info.getPkgname(), "deny",context.getPackageName(),APP_PERMIS_INDEX,uid));
+                    }
+
+
+                }
+            } catch (Exception e) {
+            }
+        }
+    }
+
 }

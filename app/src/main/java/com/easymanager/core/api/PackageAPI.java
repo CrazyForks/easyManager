@@ -905,7 +905,16 @@ public class PackageAPI extends  baseAPI implements Serializable {
         if(Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN){
             IUserManager iUserManager = getIUserManager();
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
-                ll = iUserManager.getUsers(false, false, false);
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA){
+                    try {
+                        ll = iUserManager.getUsers(false, false, false);
+                    }catch (Error e){
+                        ll = iUserManager.getUsers(false);
+                    }
+                }else{
+                    ll = iUserManager.getUsers(false, false, false);
+                }
+
             }else{
                 ll = iUserManager.getUsers(false);
             }

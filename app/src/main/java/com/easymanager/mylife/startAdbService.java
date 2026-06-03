@@ -7,6 +7,7 @@ import android.os.Process;
 
 import com.easymanager.core.entity.TransmissionEntity;
 import com.easymanager.core.entity.easyManagerClientEntity;
+import com.easymanager.core.enums.AppopsPermissionStr;
 import com.easymanager.core.server.easyManagerAPI;
 import com.easymanager.core.utils.CMD;
 import com.easymanager.enums.easyManagerEnums;
@@ -69,7 +70,7 @@ public class startAdbService {
                                             break;
                                         case easyManagerEnums.SET_APPOPS:
                                             if(managerAPI.isRoot() || managerAPI.isADB()){
-                                                if(entity.getOpsmode() == 8 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+                                                if(entity.getOpsmode() == AppopsPermissionStr.SENSORSSCAN && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
                                                     String enable_str = managerAPI.isAppopsAllow(entity.getOpmodestr()) ? "active":"idle";
                                                     String cmd_str = "cmd sensorservice set-uid-state " +entity.getPkgname() + " " + enable_str+" --user " + entity.getUid();
                                                     CMD cmd = sendCMD(cmd_str);
@@ -167,7 +168,7 @@ public class startAdbService {
                                             if(managerAPI.isRoot() || managerAPI.isADB()){
                                                 String modestr = entity.getOpmodestr();
                                                 String[] split = modestr.split("---");
-                                                if(split  != null && split.length > 0){
+                                                if(split != null && split.length > 0){
                                                     managerAPI.setAppopsModeCore(entity.getPkgname(), split[0], split[1],entity.getUid());
                                                 }
                                             }else {

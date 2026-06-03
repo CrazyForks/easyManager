@@ -3,6 +3,7 @@ package com.easymanager;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.Menu;
@@ -10,16 +11,17 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 
-import com.easymanager.core.entity.TransmissionEntity;
 import com.easymanager.core.utils.CMD;
 import com.easymanager.fragment.HelpFragmentLayout;
 import com.easymanager.fragment.HomeFragmentLayout;
 import com.easymanager.fragment.ManagerGrantUserFragmentLayout;
+import com.easymanager.utils.ConfigUtils;
 import com.easymanager.utils.FileTools;
 import com.easymanager.utils.ShellUtils;
 import com.easymanager.utils.dialog.HelpDialogUtils;
 import com.easymanager.utils.MyActivityManager;
 import com.easymanager.utils.TextUtils;
+import com.easymanager.utils.dialog.QueryDialog;
 import com.easymanager.utils.easyManagerUtils;
 import com.easymanager.utils.permissionRequest;
 import com.easymanager.activitys.BaseActivity;
@@ -154,7 +156,7 @@ public class MainActivity extends BaseActivity {
         updateUIStatus();
         if(isRoot || isADB){
             ee.requestGrantUser(this);
-            ee.startStopRunningAPP(new TransmissionEntity(null,null,this.getPackageName(),-1,uid));
+            ee.startStopRunningAPP(this,uid);
         }
     }
 
@@ -375,7 +377,7 @@ public class MainActivity extends BaseActivity {
         }else{
             menu.add(Menu.NONE,3,0,tu.getLanguageString(this,isDevice ? R.string.options_menu_remove_device_str : R.string.options_menu_active_device_str));
         }
-
+        menu.add(Menu.NONE,4,0,tu.getLanguageString(this,R.string.menu_import_config));
         menu.add(Menu.NONE,1,0,tu.getLanguageString(this,R.string.options_menu_full_exit));
         menu.add(Menu.NONE,2,0,tu.getLanguageString(this,R.string.options_menu_exit));
         return super.onCreateOptionsMenu(menu);
@@ -441,8 +443,19 @@ public class MainActivity extends BaseActivity {
 
                 }
                 break;
+            case 4:
+                new FileTools().execFileSelect(this, this, tu.getLanguageString(this,R.string.import_config_tips), ConfigUtils.MENU_IMPORT_CONFIG);
+                break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == ConfigUtils.MENU_IMPORT_CONFIG && data != null && data.getData() != null){
+            new QueryDialog().queryImportPKGProcessDialogAuto(this,uid,data.getData());
+        }
     }
 }

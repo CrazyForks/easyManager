@@ -3,13 +3,21 @@ package com.easymanager.utils.dialog;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.easymanager.R;
+import com.easymanager.core.enums.AppopsPermissionStr;
+import com.easymanager.entitys.LightBreezeConfig;
 import com.easymanager.entitys.PKGINFO;
+import com.easymanager.enums.AppManagerEnum;
+import com.easymanager.utils.ConfigUtils;
 import com.easymanager.utils.base.DialogUtils;
 
 import java.io.File;
@@ -90,7 +98,9 @@ public class QueryDialog extends DialogUtils {
                 }
                 HashSet<String> set = new HashSet<>();
                 for (PKGINFO pkginfo : list) {
-                    set.add(pkginfo.getPkgname());
+                    if(pkginfo != null){
+                        set.add(pkginfo.getPkgname());
+                    }
                 }
                 packageUtils.clearList(pkginfos,checkboxs);
                 list.clear();
@@ -208,5 +218,82 @@ public class QueryDialog extends DialogUtils {
         }).start();
 
     }
+
+    public void queryImportPKGProcessDialog(Context context, Activity activity, String msg, ListView lv1 , ArrayList<PKGINFO> pkginfos, ArrayList<Boolean> checkboxs, Integer mode, Integer uid, Uri uri , int APP_PERMIS_INDEX,boolean isAutoRun){
+        ProgressDialog show = showMyDialog(context,msg);
+        Handler handler = new Handler(){
+            @Override
+            public void handleMessage(Message msg) {
+                if(msg.what==0){
+                    show.dismiss();
+                    if(!isAutoRun){
+                        showPKGS(context,lv1,pkginfos,checkboxs);
+                    }
+                }
+            }
+        };
+        int currentUserID = easyMUtils.getCurrentUserID();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String storage = ft.getSDPath(uid);
+                    LightBreezeConfig config = new ConfigUtils().loadJSONConfig(context, uri);
+                    if (config == null) return;
+                    if(isAutoRun){
+                        packageUtils.queryImportPkgs(context,uid,config.getDisablePkgs(),AppManagerEnum.APP_DISABLE_COMPENT,APP_PERMIS_INDEX);
+                        packageUtils.queryImportPkgs(context,uid,config.getDisableFirewallPkgs(),AppManagerEnum.APP_FIREWALL,APP_PERMIS_INDEX);
+                        packageUtils.queryImportPkgs(context,uid,config.getDisableSensorsPkgs(),AppManagerEnum.APP_PERMISSION,APP_PERMIS_INDEX);
+                        packageUtils.queryImportPkgs(context,uid,config.getUninstallPkgs(),AppManagerEnum.APP_UNINSTALL,APP_PERMIS_INDEX);
+                    }else{
+                        ArrayList<String> targetPkgs;
+                        if (mode == AppManagerEnum.APP_DISABLE_COMPENT) {
+                            targetPkgs = config.getDisablePkgs();
+                        } else if (mode == AppManagerEnum.APP_FIREWALL) {
+                            targetPkgs = config.getDisableFirewallPkgs();
+                        }else if (mode == AppManagerEnum.APP_PERMISSION && APP_PERMIS_INDEX == AppopsPermissionStr.SENSORSSCAN) {
+                            targetPkgs = config.getDisableSensorsPkgs();
+                        } else {
+                            targetPkgs = config.getUninstallPkgs();
+                        }
+
+                        if (targetPkgs == null || targetPkgs.isEmpty()) {
+                            Toast.makeText(context, tu.getLanguageString(context,R.string.import_config_error), Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        PackageManager pm = context.getPackageManager();
+                        packageUtils.clearList(pkginfos, checkboxs);
+                        for (String pkg : targetPkgs) {
+                            try {
+                                PackageInfo pi = null;
+                                if (mode == AppManagerEnum.APP_RESTORE_UNINSTALL_APP || mode == AppManagerEnum.APP_UNINSTALL) {
+                                    pi = pm.getPackageInfo(pkg, PackageManager.GET_UNINSTALLED_PACKAGES);
+                                } else {
+                                    pi = pm.getPackageInfo(pkg, 0);
+                                }
+
+                                if (pi != null) {
+                                    PKGINFO info = packageUtils.getPKGINFO(context, pkg);
+                                    pkginfos.add(info);
+                                    checkboxs.add(true);
+                                }
+                            } catch (Exception e) {
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                sendHandlerMSG(handler,0);
+            }
+        }).start();
+
+    }
+
+    public void queryImportPKGProcessDialogAuto(Context context,Integer uid, Uri uri){
+        queryImportPKGProcessDialog(context, null, tu.getLanguageString(context,R.string.general_loading), null, null, null, -1, uid, uri, AppopsPermissionStr.SENSORSSCAN, true);
+    }
+
 
 }

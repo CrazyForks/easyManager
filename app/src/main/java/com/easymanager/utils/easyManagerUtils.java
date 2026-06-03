@@ -289,8 +289,9 @@ public class easyManagerUtils {
         }
     }
 
-    public void startStopRunningAPP(TransmissionEntity entity){
+    public void startStopRunningAPP(Context context,int uid){
         if(!isDead || skipError){
+            TransmissionEntity entity = new TransmissionEntity(null,null,context.getPackageName(),-1,uid);
             easyManagerClientEntity adben2 = new easyManagerClientEntity(null,entity,easyManagerEnums.START_STOP_RUNNING_PACKAGE);
             putOptionOnServer(adben2);
         }
@@ -327,6 +328,10 @@ public class easyManagerUtils {
             putOptionOnServer(adben2);
         }
 
+    }
+
+    public void setFirewallState(Context context , String pkgname , int uid , boolean state){
+        setFirewallState(new TransmissionEntity(pkgname,null, context.getPackageName(), (state ? 0 : 1),uid));
     }
 
     public void dumpAPK(String apksourcepath,String outpath){

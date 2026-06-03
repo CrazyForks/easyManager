@@ -1,5 +1,17 @@
+<h1 align="center">轻风 | Light Breeze</h1>
 
-如果你想阅读中文说明, [点这里](https://github.com/MrsEWE44/easyManager/blob/master/README.md).
+<p align="center">
+  🇺🇸 <a href="./README_EN.md">English</a> | 🇨🇳 <a href="./README.md">简体中文</a>
+</p>
+
+<p align="center">
+ <a href="https://github.com/MrsEWE44/easyManager/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/MrsEWE44/easyManager"></a>
+ <a><img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/MrsEWE44/easyManager?style=flat"></a>
+ <a><img alt="GitHub forks" src="https://img.shields.io/github/forks/MrsEWE44/easyManager?style=flat"></a>
+ <a><img alt="GitHub Downloads (all assets, all releases)" src="https://img.shields.io/github/downloads/MrsEWE44/easyManager/total"></a>
+ <a><img alt="GitHub watchers" src="https://img.shields.io/github/watchers/MrsEWE44/easyManager?style=flat"></a>
+
+</p>
 
 Light Breeze is a lightweight, focused, and easy-to-use Android utility. It works well on custom systems from Chinese OEMs and supports three operating modes: ADB, ROOT, and Device Owner. It is stable, reliable, and simple to use.True to its name, Light Breeze comes gently and leaves quietly. It does not harm the system or abuse permissions, focusing only on its core tasks with restraint and purity.
 
@@ -13,15 +25,17 @@ Unlike them, Light Breeze uses Socket-based TCP communication to execute operati
 Starting with version V1.2.8b, this project is divided into two versions, which are maintained and updated separately: [Light Breeze No-Root Version](https://github.com/MrsEWE44/easyManager/tree/md5) and [Light Breeze Full Version](https://github.com/MrsEWE44/easyManager/tree/master).
 
 
-- V1.3.1
+- V1.3.2
 
-1.Fixed the issue of no error messages being returned when executing commands.
+1.Fixed an issue where user data could not be retrieved on Android 16 (SDK 36.1).
 
-2.Enhanced ADB permissions, added shake-to-disable sensors and firewall functionality, integrated sensor and network management options into permission management, fully supporting batch operations and bypassing system restrictions.
+2.Fixed an issue where the app icon remained the old version on AOSP-based systems.
 
-3.Added application manifest configuration file import and export functions for easier uninstallation and disabling of unnecessary software.
+3.Enhanced the configuration file import/export functionality; added a feature to automatically execute corresponding actions on the main page after importing a configuration file.
 
-4.Changed the version number to V1.3.1.
+4.Changed the default setting for permission management options to "Deny."
+
+5.Updated the version number to 1.3.2.
 
 
 ### Software screenshots:
