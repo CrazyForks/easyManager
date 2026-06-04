@@ -22,7 +22,6 @@ import com.easymanager.utils.base.DialogUtils;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 public class QueryDialog extends DialogUtils {
 
@@ -96,17 +95,12 @@ public class QueryDialog extends DialogUtils {
                         list.addAll(pkginfos);
                     }
                 }
-                HashSet<String> set = new HashSet<>();
+                packageUtils.clearList(pkginfos,checkboxs);
                 for (PKGINFO pkginfo : list) {
                     if(pkginfo != null){
-                        set.add(pkginfo.getPkgname());
+                        pkginfos.add(pkginfo);
+                        checkboxs.add(false);
                     }
-                }
-                packageUtils.clearList(pkginfos,checkboxs);
-                list.clear();
-                for (String s : set) {
-                    pkginfos.add(packageUtils.getPKGINFO(context,s));
-                    checkboxs.add(false);
                 }
                 sendHandlerMSG(handler,0);
             }

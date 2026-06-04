@@ -125,12 +125,13 @@ public class PackageUtils {
         }
     }
 
-    public PKGINFO getPKGINFOByUID(PackageManager packageManager,String pkgname){
+    public PKGINFO getPKGINFOByUID(PackageManager packageManager,MyPackageInfo myPackageInfo){
         try {
-            PackageInfo packageInfo = packageManager.getPackageInfo(pkgname, 0);
+            PackageInfo packageInfo = packageManager.getPackageInfo(myPackageInfo.packageName, 0);
             return getPKGINFO(packageManager,packageInfo,packageInfo.applicationInfo.sourceDir);
         }catch (Exception e){
-            return null;
+            Long filesieze = myPackageInfo.myapplicationInfo.sourceDir==null? 0: new File(myPackageInfo.myapplicationInfo.sourceDir).length();
+            return new PKGINFO(myPackageInfo.packageName, myPackageInfo.packageName, myPackageInfo.myapplicationInfo.sourceDir,myPackageInfo.myapplicationInfo.uid+"",myPackageInfo.versionName,filesieze);
         }
     }
 
@@ -252,7 +253,12 @@ public class PackageUtils {
         if(checkboxs != null){
             checkboxs.add(false);
         }
-        pkginfos.add(getPKGINFOByUID(packageManager,packageInfo.packageName));
+
+        PKGINFO pkginfoByUID = getPKGINFOByUID(packageManager, packageInfo);
+        if(pkginfoByUID != null){
+            pkginfos.add(pkginfoByUID);
+        }
+
     }
 
 
@@ -288,6 +294,7 @@ public class PackageUtils {
     public PackageInfo getPackageInfo(PackageManager pm , String pkgname , Integer mode) {
         if(mode == 0){
             PackageInfo packageInfo = null;
+            System.out.println("pkg :::::::::::::::::::::::: " + pkgname);
             try {
                 packageInfo = pm.getPackageInfo(pkgname, PackageManager.GET_PERMISSIONS|PackageManager.GET_ACTIVITIES|PackageManager.GET_DISABLED_COMPONENTS);
             } catch (PackageManager.NameNotFoundException e) {

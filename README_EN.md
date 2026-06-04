@@ -25,17 +25,11 @@ Unlike them, Light Breeze uses Socket-based TCP communication to execute operati
 Starting with version V1.2.8b, this project is divided into two versions, which are maintained and updated separately: [Light Breeze No-Root Version](https://github.com/MrsEWE44/easyManager/tree/md5) and [Light Breeze Full Version](https://github.com/MrsEWE44/easyManager/tree/master).
 
 
-- V1.3.2
+- V1.3.2a
 
-1.Fixed an issue where user data could not be retrieved on Android 16 (SDK 36.1).
+1.Fixed an issue causing the app to crash when retrieving cloned applications.
 
-2.Fixed an issue where the app icon remained the old version on AOSP-based systems.
-
-3.Enhanced the configuration file import/export functionality; added a feature to automatically execute corresponding actions on the main page after importing a configuration file.
-
-4.Changed the default setting for permission management options to "Deny."
-
-5.Updated the version number to 1.3.2.
+2.Updated the version number to 1.3.2a.
 
 
 ### Software screenshots:
@@ -45,30 +39,30 @@ Starting with version V1.2.8b, this project is divided into two versions, which 
   <tr>
     <td align="center">
       <img src="images/3.png" width="250"><br>
-      <b>图片1</b>
+      <b>Image1</b>
     </td>
     <td align="center">
       <img src="images/4.png" width="250"><br>
-      <b>图片2</b>
+      <b>Image2</b>
     </td>
     <td align="center">
       <img src="images/1.png" width="250"><br>
-      <b>图片3</b>
+      <b>Image3</b>
     </td>
   </tr>
 
   <tr>
     <td align="center">
       <img src="images/2.png" width="250"><br>
-      <b>图片4</b>
+      <b>Image4</b>
     </td>
     <td align="center">
       <img src="images/5.png" width="250"><br>
-      <b>图片5</b>
+      <b>Image5</b>
     </td>
     <td align="center">
       <img src="images/6.png" width="250"><br>
-      <b>图片6</b>
+      <b>Image6</b>
     </td>
   </tr>
 </table>

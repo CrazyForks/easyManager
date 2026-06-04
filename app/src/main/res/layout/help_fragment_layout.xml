@@ -138,7 +138,7 @@
                 android:id="@+id/hfl_donate"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:text="捐赠支持"
+                android:text="@string/help_layout_donate"
                 android:textColor="@color/onPrimary"
                 android:background="@drawable/btn_material" />
         </LinearLayout>

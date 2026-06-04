@@ -554,7 +554,7 @@ public class PackageAPI extends  baseAPI implements Serializable {
                 IPackageInstaller iPackageInstaller = getIPackageInstaller();
                 LocalIntentReceiver r = new LocalIntentReceiver();
                 int flags2 = Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1 ? 0 : MATCH_STATIC_SHARED_AND_SDK_LIBRARIES;
-                PackageInfo packageInfo = getPackageInfo(pkgname,getTranslatedUserId(),flags2);
+                PackageInfo packageInfo = getPackageInfo(pkgname,userId,flags2);
                 if((packageInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0){
                     flags |= DELETE_SYSTEM_APP;
                 }
@@ -1004,9 +1004,14 @@ public class PackageAPI extends  baseAPI implements Serializable {
 
     }
 
+    public MyApplicationInfo copyPkgInfoAppInfoToMyAppInfo(ApplicationInfo applicationInfo){
+        MyApplicationInfo myApplicationInfo = new MyApplicationInfo(applicationInfo.flags,applicationInfo.uid, applicationInfo.enabled,applicationInfo.sourceDir);
+        return myApplicationInfo;
+    }
+
     public MyPackageInfo copyPkgInfoToMyPkginfo(PackageInfo packageInfo){
         ApplicationInfo applicationInfo = packageInfo.applicationInfo;
-        MyApplicationInfo myApplicationInfo = new MyApplicationInfo(applicationInfo.flags, applicationInfo.enabled,applicationInfo.sourceDir);
+        MyApplicationInfo myApplicationInfo = copyPkgInfoAppInfoToMyAppInfo(applicationInfo);
         ActivityInfo activities[] = packageInfo.activities;
         ServiceInfo[] services = packageInfo.services;
         ActivityInfo[] receivers = packageInfo.receivers;
@@ -1220,52 +1225,6 @@ public class PackageAPI extends  baseAPI implements Serializable {
             }
         }
         return false;
-    }
-
-    private boolean isAllowPKG(String pkgname){
-        for (String s : allowPkgs()) {
-            if(pkgname.equals(s)){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private String[] allowPkgs() {
-        return new String[]{
-                "android",
-                "android.ext.services",
-                "android.ext.shared",
-                "com.android.bluetooth",
-                "com.android.htmlviewer",
-                "com.android.inputdevices",
-                "com.android.shell",
-                "com.android.certinstaller",
-                "com.android.externalstorage",
-                "com.android.providers.contacts",
-                "com.android.providers.downloads",
-                "com.android.providers.media",
-                "com.android.providers.settings",
-                "com.android.providers.userdictionary",
-                "com.android.server.telecom",
-                "com.android.packageinstaller",
-                "com.android.settings",
-                "com.android.providers.telephony",
-                "com.android.mms.service",
-                "com.android.webview",
-                "com.android.location.fused",
-                "com.android.cts.priv.ctsshim",
-                "com.android.statementservice",
-                "com.android.defcontainer",
-                "com.android.keychain",
-                "com.android.proxyhandler",
-                "com.android.dreams.basic",
-                "com.android.printspooler",
-                "com.android.pacprocessor",
-                "com.android.providers.downloads.ui",
-                "com.google.android.webview",
-                "com.lenovo.lsf"
-        };
     }
 
 }

@@ -344,4 +344,5 @@
     <string name="perm_bluetooth">藍牙</string>
     <string name="perm_network">網路</string>
     <string name="perm_wifi">Wi-Fi</string>
+    <string name="help_layout_donate">Donate Support Authors</string>
 </resources>
