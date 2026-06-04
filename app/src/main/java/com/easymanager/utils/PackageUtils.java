@@ -294,7 +294,6 @@ public class PackageUtils {
     public PackageInfo getPackageInfo(PackageManager pm , String pkgname , Integer mode) {
         if(mode == 0){
             PackageInfo packageInfo = null;
-            System.out.println("pkg :::::::::::::::::::::::: " + pkgname);
             try {
                 packageInfo = pm.getPackageInfo(pkgname, PackageManager.GET_PERMISSIONS|PackageManager.GET_ACTIVITIES|PackageManager.GET_DISABLED_COMPONENTS);
             } catch (PackageManager.NameNotFoundException e) {
