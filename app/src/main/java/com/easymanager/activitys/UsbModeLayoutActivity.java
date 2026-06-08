@@ -16,12 +16,12 @@ import android.widget.ListView;
 import android.widget.Spinner;
 
 import com.easymanager.R;
-import com.easymanager.utils.FileTools;
+import com.easymanager.utils.ext.FileTools;
 import com.easymanager.utils.base.AppCloneUtils;
 import com.easymanager.utils.dialog.HelpDialogUtils;
-import com.easymanager.utils.MyActivityManager;
-import com.easymanager.utils.OtherTools;
-import com.easymanager.utils.permissionRequest;
+import com.easymanager.utils.ext.MyActivityManager;
+import com.easymanager.utils.ext.OtherTools;
+import com.easymanager.utils.ext.permissionRequest;
 
 import java.util.ArrayList;
 
@@ -44,7 +44,7 @@ public class UsbModeLayoutActivity extends BaseActivity {
 
     private int MOUNT_MODE_INDEX=0;
 
-    private AppCloneUtils acu = new AppCloneUtils();
+    private AppCloneUtils acu = AppCloneUtils.Instance();
     private FileTools ft = acu.getUd().ft;
 
 
@@ -76,7 +76,7 @@ public class UsbModeLayoutActivity extends BaseActivity {
         umllv = findViewById(R.id.umllv);
         umlsp.setAdapter(new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, getMountModeOPT()));
         btClicked();
-        new HelpDialogUtils().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
+        HelpDialogUtils.Instance().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
     }
 
     private void btClicked() {
@@ -139,7 +139,7 @@ public class UsbModeLayoutActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        OtherTools otherTools = new OtherTools();
+        OtherTools otherTools = OtherTools.Instance();
         otherTools.addMenuBase(this,menu,mode);
         getMenuInflater().inflate(R.menu.main,menu);
         return super.onCreateOptionsMenu(menu);
@@ -158,7 +158,7 @@ public class UsbModeLayoutActivity extends BaseActivity {
         }
 
         if(itemId == 5){
-            new HelpDialogUtils().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
+            HelpDialogUtils.Instance().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
         }
 
         if(itemId == 6){

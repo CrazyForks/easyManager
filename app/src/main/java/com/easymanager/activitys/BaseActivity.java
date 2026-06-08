@@ -3,12 +3,8 @@ package com.easymanager.activitys;
 import android.app.Activity;
 import android.os.Bundle;
 import android.content.res.Configuration;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-import com.easymanager.R;
 
-import com.easymanager.utils.ThemeUtils;
+import com.easymanager.utils.view.ThemeUtils;
 
 public abstract class BaseActivity extends Activity {
 

@@ -1,6 +1,8 @@
 package com.easymanager.mylife;
 
 import android.content.ComponentName;
+import android.content.pm.PackageInfo;
+import android.content.pm.ParceledListSlice;
 import android.os.Build;
 import android.os.Looper;
 import android.os.Process;
@@ -12,6 +14,8 @@ import com.easymanager.core.server.easyManagerAPI;
 import com.easymanager.core.utils.CMD;
 import com.easymanager.enums.easyManagerEnums;
 
+import java.util.List;
+
 public class startAdbService {
 
     private final static easyManagerAPI managerAPI = new easyManagerAPI();
@@ -19,6 +23,7 @@ public class startAdbService {
     public static void main(String[] args) {
         // 利用looper让线程循环
         Looper.prepareMainLooper();
+
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -194,6 +199,13 @@ public class startAdbService {
                                                 return getActiveADB();
                                             }
                                             break;
+                                        case easyManagerEnums.APP_CLONE2:
+                                            if(managerAPI.isRoot() || managerAPI.isADB()){
+                                                managerAPI.createAppClone2();
+                                            }else {
+                                                return getActiveADB();
+                                            }
+                                            break;
                                         case easyManagerEnums.APP_CLONE_REMOVE:
                                             if(managerAPI.isRoot() || managerAPI.isADB()){
                                                 managerAPI.removeAppClone(entity.getUid());
@@ -218,7 +230,7 @@ public class startAdbService {
                                             }
                                         case easyManagerEnums.GET_PACKAGEINFO_UID:
                                             if(managerAPI.isRoot() || managerAPI.isADB()){
-                                                return managerAPI.getMyPackageInfo(entity.getPkgname(), entity.getUid());
+                                                return managerAPI.getPackageInfo(entity.getPkgname(), entity.getUid());
                                             }else {
                                                 return getActiveADB();
                                             }
@@ -341,6 +353,28 @@ public class startAdbService {
                                             if(managerAPI.isRoot() || managerAPI.isADB()){
                                                 return managerAPI.getAccounts();
                                             }else {
+                                                return getActiveADB();
+                                            }
+                                        case easyManagerEnums.IS_APP_EXISTS:
+                                            if(managerAPI.isRoot() || managerAPI.isADB()){
+                                                return managerAPI.isAppExists(entity.getPkgname(),entity.getUid());
+                                            }else {
+                                                return getActiveADB();
+                                            }
+                                        case easyManagerEnums.START_ACTIVITY_AS_USER:
+                                            if(managerAPI.isRoot() || managerAPI.isADB()){
+                                                managerAPI.startActivityAsUser(entity.getPkgname(),entity.getUid());
+                                            }else {
+                                                return getActiveADB();
+                                            }
+                                            break;
+                                        case easyManagerEnums.TEST_FUNCTION:
+                                            if(managerAPI.isRoot() || managerAPI.isADB()){
+                                                byte[] org = managerAPI.getInstalledPackages(entity.getUid());
+                                                System.out.println("send bytes");
+                                                return org;
+                                            }else {
+                                                System.out.println("TEST_FUNCTION is dead....");
                                                 return getActiveADB();
                                             }
 

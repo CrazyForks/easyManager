@@ -15,15 +15,15 @@ import com.easymanager.core.utils.CMD;
 import com.easymanager.fragment.HelpFragmentLayout;
 import com.easymanager.fragment.HomeFragmentLayout;
 import com.easymanager.fragment.ManagerGrantUserFragmentLayout;
-import com.easymanager.utils.ConfigUtils;
-import com.easymanager.utils.FileTools;
-import com.easymanager.utils.ShellUtils;
+import com.easymanager.utils.ext.ConfigUtils;
+import com.easymanager.utils.ext.FileTools;
+import com.easymanager.utils.ext.ShellUtils;
 import com.easymanager.utils.dialog.HelpDialogUtils;
-import com.easymanager.utils.MyActivityManager;
-import com.easymanager.utils.TextUtils;
+import com.easymanager.utils.ext.MyActivityManager;
+import com.easymanager.utils.ext.TextUtils;
 import com.easymanager.utils.dialog.QueryDialog;
-import com.easymanager.utils.easyManagerUtils;
-import com.easymanager.utils.permissionRequest;
+import com.easymanager.utils.ext.easyManagerUtils;
+import com.easymanager.utils.ext.permissionRequest;
 import com.easymanager.activitys.BaseActivity;
 
 public class MainActivity extends BaseActivity {
@@ -33,8 +33,8 @@ public class MainActivity extends BaseActivity {
     private Fragment homeFragment , helpFragment , manageFragment , currentFragment;
     private boolean isRoot,isADB,isDevice;
     private int uid;
-    private easyManagerUtils ee = new easyManagerUtils();
-    private HelpDialogUtils dialogUtils = new HelpDialogUtils();
+    private easyManagerUtils ee = easyManagerUtils.Instance();
+    private HelpDialogUtils dialogUtils = HelpDialogUtils.Instance();
     private TextUtils tu = dialogUtils.tu;
     private android.app.AlertDialog currentDialog;
 
@@ -55,6 +55,7 @@ public class MainActivity extends BaseActivity {
         } else {
             showInitialDialogs();
         }
+
 //        new NetUtilsDialog().checkupdate(this);
     }
 
@@ -94,8 +95,8 @@ public class MainActivity extends BaseActivity {
     }
 
     private void checkInitialStatus() {
-        ShellUtils shellUtils = new ShellUtils();
-        FileTools fileUtils = new FileTools();
+        ShellUtils shellUtils = ShellUtils.Instance();
+        FileTools fileUtils = FileTools.Instance();
         isRoot = false;
         isADB = false;
         isDevice = ee.isDeviceOwnerActive(this);
@@ -183,7 +184,7 @@ public class MainActivity extends BaseActivity {
 
         // 如果检测到服务掉线，且设备具备 Root 权限，则尝试自动重新激活
         if (!serverStatus) {
-            ShellUtils shellUtils = new ShellUtils();
+            ShellUtils shellUtils = ShellUtils.Instance();
             if (shellUtils.testRoot()) {
                 ee.activeRoot(this);
                 // 激活后循环检测，最多等待 1 秒 (5次 * 200ms)
@@ -444,7 +445,7 @@ public class MainActivity extends BaseActivity {
                 }
                 break;
             case 4:
-                new FileTools().execFileSelect(this, this, tu.getLanguageString(this,R.string.import_config_tips), ConfigUtils.MENU_IMPORT_CONFIG);
+                FileTools.Instance().execFileSelect(this, this, tu.getLanguageString(this,R.string.import_config_tips), ConfigUtils.MENU_IMPORT_CONFIG);
                 break;
         }
 
@@ -455,7 +456,7 @@ public class MainActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == ConfigUtils.MENU_IMPORT_CONFIG && data != null && data.getData() != null){
-            new QueryDialog().queryImportPKGProcessDialogAuto(this,uid,data.getData());
+            QueryDialog.Instance().queryImportPKGProcessDialogAuto(this,uid,data.getData());
         }
     }
 }

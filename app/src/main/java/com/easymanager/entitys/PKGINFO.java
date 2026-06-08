@@ -79,6 +79,16 @@ public class PKGINFO implements Serializable {
     private String pkgname , appname , apkpath,apkuid,appversionname;
     private Long filesize;
 
+    public int getUid() {
+        return uid;
+    }
+
+    public void setUid(int uid) {
+        this.uid = uid;
+    }
+
+    private int uid;
+
     public int getIconmode() {
         return iconmode;
     }

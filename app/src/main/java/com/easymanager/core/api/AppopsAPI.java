@@ -19,7 +19,7 @@ import java.util.Map;
 public class AppopsAPI extends baseAPI{
 
     private static final Map<String, IAppOpsService> I_APP_OPS_SERVICE_CACHE = new HashMap<>();
-    private PackageAPI packageAPI = new PackageAPI();
+    private PackageAPI packageAPI = PackageAPI.Instance();
     private AppopsPermissionStr aps = new AppopsPermissionStr();
     public IAppOpsService getIAppOpsService(){
         IAppOpsService iAppOpsService = I_APP_OPS_SERVICE_CACHE.get("iappservice");

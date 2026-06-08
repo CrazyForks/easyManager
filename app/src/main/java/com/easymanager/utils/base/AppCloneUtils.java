@@ -1,13 +1,22 @@
 package com.easymanager.utils.base;
 
 import com.easymanager.core.utils.CMD;
-import com.easymanager.utils.TextUtils;
+import com.easymanager.utils.ext.TextUtils;
 import com.easymanager.utils.dialog.PackageDialog;
 import com.easymanager.utils.dialog.SearchDialog;
 import com.easymanager.utils.dialog.UserDialog;
-import com.easymanager.utils.easyManagerUtils;
+import com.easymanager.utils.ext.easyManagerUtils;
 
 public class AppCloneUtils {
+
+    private static AppCloneUtils instance = null;
+
+    public static AppCloneUtils Instance(){
+        if(instance == null){
+            instance = new AppCloneUtils();
+        }
+        return instance;
+    }
 
     public UserDialog getUd() {
         return ud;
@@ -33,9 +42,9 @@ public class AppCloneUtils {
         this.sd = sd;
     }
 
-    private UserDialog ud  =new UserDialog();
-    private PackageDialog pd = new PackageDialog();
-    private SearchDialog sd = new SearchDialog();
+    private UserDialog ud  = UserDialog.Instance();
+    private PackageDialog pd = PackageDialog.Instance();
+    private SearchDialog sd = SearchDialog.Instance();
 
     public int getCurrentUserID(){
         return getEasyManagerUtils().getCurrentUserID();
@@ -52,5 +61,6 @@ public class AppCloneUtils {
     public TextUtils getTU(){
         return ud.tu;
     }
+
 
 }

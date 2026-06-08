@@ -63,6 +63,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:baselineAligned="false"
                     android:orientation="horizontal">
                     <Button
                         android:id="@+id/hflinlocalapk"
@@ -119,6 +120,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:baselineAligned="false"
                     android:orientation="horizontal">
                     <Button
                         android:id="@+id/hflbackupapp"
@@ -173,6 +175,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:baselineAligned="false"
                     android:orientation="horizontal">
                     <Button
                         android:id="@+id/hflappclone"
@@ -236,13 +239,14 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:baselineAligned="false"
                     android:orientation="horizontal">
                     <Button
                         android:id="@+id/hflmountlocalimg"
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="48dp"
-                        android:layout_marginRight="4dp"
+                        android:layout_marginRight="2dp"
                         android:text="@string/button_home_use_usb_mode"
                         android:textColor="@color/onPrimary"
                         android:background="@drawable/btn_material" />
@@ -251,7 +255,7 @@
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="48dp"
-                        android:layout_marginLeft="4dp"
+                        android:layout_marginRight="2dp"
                         android:text="@string/button_home_create_usb_img_file"
                         android:textColor="@color/onPrimary"
                         android:background="@drawable/btn_material" />
@@ -287,56 +291,78 @@
                         android:textColor="@color/onSurface" />
                 </LinearLayout>
 
-                <GridLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:columnCount="2">
+                    android:orientation="horizontal">
+
                     <Button
                         android:id="@+id/hflsetntp"
                         android:layout_width="0dp"
-                        android:layout_columnWeight="1"
+                        android:layout_weight="1"
                         android:layout_height="48dp"
-                        android:layout_margin="4dp"
+                        android:layout_marginRight="4dp"
                         android:text="@string/button_home_set_ntp"
                         android:textColor="@color/onPrimary"
                         android:background="@drawable/btn_material" />
                     <Button
                         android:id="@+id/hflsetrate"
                         android:layout_width="0dp"
-                        android:layout_columnWeight="1"
+                        android:layout_weight="1"
                         android:layout_height="48dp"
-                        android:layout_margin="4dp"
+                        android:layout_marginRight="4dp"
                         android:text="@string/button_home_set_rate"
                         android:textColor="@color/onPrimary"
                         android:background="@drawable/btn_material" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
                     <Button
                         android:id="@+id/hfldelx"
                         android:layout_width="0dp"
-                        android:layout_columnWeight="1"
+                        android:layout_weight="1"
                         android:layout_height="48dp"
-                        android:layout_margin="4dp"
+                        android:layout_marginRight="4dp"
                         android:text="@string/button_home_del_x"
                         android:textColor="@color/onPrimary"
                         android:background="@drawable/btn_material" />
                     <Button
                         android:id="@+id/hflfileshared"
                         android:layout_width="0dp"
-                        android:layout_columnWeight="1"
+                        android:layout_weight="1"
                         android:layout_height="48dp"
-                        android:layout_margin="4dp"
+                        android:layout_marginRight="4dp"
                         android:text="@string/button_home_file_share"
                         android:textColor="@color/onPrimary"
                         android:background="@drawable/btn_material" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
+
                     <Button
                         android:id="@+id/hflruncmd"
                         android:layout_width="0dp"
-                        android:layout_columnWeight="1"
+                        android:layout_weight="1"
                         android:layout_height="48dp"
-                        android:layout_margin="4dp"
+                        android:layout_marginRight="4dp"
                         android:text="@string/button_home_run_cmd"
                         android:textColor="@color/onPrimary"
                         android:background="@drawable/btn_material" />
-                </GridLayout>
+
+
+                </LinearLayout>
+
+
             </LinearLayout>
 
         </LinearLayout>

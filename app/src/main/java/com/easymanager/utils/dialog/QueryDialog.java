@@ -17,13 +17,22 @@ import com.easymanager.core.enums.AppopsPermissionStr;
 import com.easymanager.entitys.LightBreezeConfig;
 import com.easymanager.entitys.PKGINFO;
 import com.easymanager.enums.AppManagerEnum;
-import com.easymanager.utils.ConfigUtils;
+import com.easymanager.utils.ext.ConfigUtils;
 import com.easymanager.utils.base.DialogUtils;
 
 import java.io.File;
 import java.util.ArrayList;
 
 public class QueryDialog extends DialogUtils {
+
+    private static QueryDialog instance = null;
+
+    public static QueryDialog Instance() {
+        if(instance == null){
+            instance = new QueryDialog();
+        }
+        return instance;
+    }
 
     public void queryUninstalledPKGSProcessDialog(Context context, Activity activity, ListView lv1 , ArrayList<PKGINFO> pkginfos, ArrayList<Boolean> checkboxs, int uid) {
         queryPKGProcessDialog(context,activity,tu.getLanguageString(context,R.string.get_uninstalled_apps_msg),lv1,pkginfos,checkboxs,8,uid);
@@ -232,7 +241,7 @@ public class QueryDialog extends DialogUtils {
             public void run() {
                 try {
                     String storage = ft.getSDPath(uid);
-                    LightBreezeConfig config = new ConfigUtils().loadJSONConfig(context, uri);
+                    LightBreezeConfig config = ConfigUtils.Instance().loadJSONConfig(context, uri);
                     if (config == null) return;
                     if(isAutoRun){
                         packageUtils.queryImportPkgs(context,uid,config.getDisablePkgs(),AppManagerEnum.APP_DISABLE_COMPENT,APP_PERMIS_INDEX);

@@ -1,4 +1,4 @@
-package com.easymanager.utils;
+package com.easymanager.utils.ext;
 
 import android.Manifest;
 import android.app.Activity;
@@ -11,9 +11,6 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.Process;
 import android.provider.Settings;
-import android.widget.Toast;
-
-import com.easymanager.R;
 
 
 public class permissionRequest {

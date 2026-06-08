@@ -3,8 +3,11 @@ package com.easymanager.activitys;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,10 +24,9 @@ import com.easymanager.core.utils.CMD;
 import com.easymanager.entitys.PKGINFO;
 import com.easymanager.enums.AppManagerEnum;
 import com.easymanager.enums.easyManagerEnums;
-import com.easymanager.utils.MyActivityManager;
-import com.easymanager.utils.OtherTools;
+import com.easymanager.utils.ext.MyActivityManager;
+import com.easymanager.utils.ext.OtherTools;
 import com.easymanager.utils.base.AppCloneUtils;
-import com.easymanager.utils.base.DialogBaseUtils;
 import com.easymanager.utils.dialog.HelpDialogUtils;
 
 import java.util.ArrayList;
@@ -36,15 +38,16 @@ public class AppCloneLayoutActivity extends BaseActivity {
     private ArrayList<PKGINFO> pkginfos = new ArrayList<>();
     private ArrayList<Boolean> pkgcheckboxs = new ArrayList<>();
     private EditText acmet1;
-    private Spinner acmsp1 , acmsp2;
+    private Spinner acmsp1 , acmsp2 , acmsp3;
     private Button clmbt1;
     private ListView acmlv1 , acmlv2;
     private Context context;
     private Activity activity;
     private Boolean isRoot , isADB, isDevice;
-    private int mode,APP_CHOICES_INDEX,MANAGER_INDEX;
+    private int mode,APP_CHOICES_INDEX,MANAGER_INDEX,WORK_MODE_INDEX;
+    private int nowItemIndex=-1;
 
-    private AppCloneUtils acu = new AppCloneUtils();
+    private AppCloneUtils acu = AppCloneUtils.Instance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +58,7 @@ public class AppCloneLayoutActivity extends BaseActivity {
         context = this;
         activity = this;
         if(Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP){
-            new DialogBaseUtils().showInfoMsg(context,getLanStr(R.string.tips),getLanStr(R.string.show_app_clone_low_version_msg));
+            acu.getUd().showInfoMsg(context,getLanStr(R.string.tips),getLanStr(R.string.show_app_clone_low_version_msg));
         }else {
             initBt();
         }
@@ -71,17 +74,35 @@ public class AppCloneLayoutActivity extends BaseActivity {
         acmet1 = findViewById(R.id.acmet1);
         acmsp1 = findViewById(R.id.acmsp1);
         acmsp2 = findViewById(R.id.acmsp2);
+        acmsp3 = findViewById(R.id.acmsp3);
         clmbt1 = findViewById(R.id.clmbt1);
         acmlv1 = findViewById(R.id.acmlv1);
         acmlv2 = findViewById(R.id.acmlv2);
         acmsp1.setAdapter(getSpinnerAdapter(getManagerMode()));
         acmsp2.setAdapter(getSpinnerAdapter(getAppChoicesOPT()));
+        acmsp3.setAdapter(getSpinnerAdapter(getAppChoicesOPT2()));
+        btClicked();
+
         if(mode == AppManagerEnum.APP_CLONE){
             acmsp1.setEnabled(false);
             clmbt1.setText(getLanStr(R.string.app_clone_button_start_clone_str));
+
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+                acmsp3.setSelection(1);
+                acmsp3.setEnabled(true);
+                acmsp3.getOnItemSelectedListener()
+                        .onItemSelected(acmsp3, null, 1, 0);
+
+            }else{
+                acmsp3.setSelection(0);
+                acmsp3.setEnabled(false);
+                acmsp3.getOnItemSelectedListener()
+                        .onItemSelected(acmsp3, null, 0, 0);
+            }
         }
 
         if(mode == AppManagerEnum.APP_CLONE_MANAGE){
+            acmsp3.setEnabled(false);
             acmet1.setEnabled(false);
             acmet1.setHint(getLanStr(R.string.stop_edit));
             clmbt1.setText(getLanStr(R.string.app_clone_button_manager_clone_change_str));
@@ -89,25 +110,27 @@ public class AppCloneLayoutActivity extends BaseActivity {
 
         if(mode == AppManagerEnum.APP_CLONE_REMOVE){
             acmsp1.setEnabled(false);
+            acmsp3.setEnabled(false);
             acmet1.setEnabled(false);
             acmet1.setHint(getLanStr(R.string.stop_edit));
             clmbt1.setText(getLanStr(R.string.app_clone_button_delete_clone_str));
         }
-        btClicked();
+
         String maxuser = acu.getEasyManagerUtils().getProp(context,"persist.sys.max_profiles");
         if(maxuser.equals(String.valueOf(easyManagerEnums.ulock_max_user_size))){
             String cmdstr = String.format("setprop fw.max_users %d ;",easyManagerEnums.ulock_max_user_size);
             CMD cmd = acu.getEasyManagerUtils().runCMD(cmdstr);
             cmd.getResult();
         }
-        acmet1.setHint(String.format(getLanStr(R.string.app_clone_input_size_hint_str),acu.getPd().easyMUtils.getMaxSupportedUsers(context)));
-        new HelpDialogUtils().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
+
+        HelpDialogUtils.Instance().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
     }
 
     private void btClicked() {
         int currentUserID = acu.getCurrentUserID();
         spinnerChange(acmsp1,0);
         spinnerChange(acmsp2,1);
+        spinnerChange(acmsp3,2);
         clmbt1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -156,7 +179,7 @@ public class AppCloneLayoutActivity extends BaseActivity {
                     if(mode == AppManagerEnum.APP_CLONE){
                         String s = acmet1.getText().toString();
                         int count =(s==null || s.isEmpty())?1:Integer.valueOf(s);
-                        acu.getUd().showAppClone(context,list,count,getLanStr(R.string.app_clone_create_clone_title),getLanStr(R.string.app_clone_create_clone_msg));
+                        acu.getUd().showAppClone(context,activity,list,count,getLanStr(R.string.app_clone_create_clone_title),getLanStr(R.string.app_clone_create_clone_msg),WORK_MODE_INDEX);
                     }
 
                     if(mode == AppManagerEnum.APP_CLONE_MANAGE){
@@ -173,6 +196,15 @@ public class AppCloneLayoutActivity extends BaseActivity {
             }
         });
 
+        acmlv1.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                nowItemIndex=i;
+                createLVMenu();
+                return false;
+            }
+        });
+
         acmlv2.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -186,6 +218,37 @@ public class AppCloneLayoutActivity extends BaseActivity {
             }
         });
 
+    }
+    private void createLVMenu(){
+        acmlv1.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
+            @Override
+            public void onCreateContextMenu(ContextMenu contextMenu, View view, ContextMenu.ContextMenuInfo contextMenuInfo) {
+                contextMenu.add(0,0,0, R.string.copy_app_detail);
+                contextMenu.add(0,1,0, R.string.jump_app_detail);
+                contextMenu.add(0,2,0, R.string.create_shortcut);
+            }
+        });
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+        PKGINFO pkginfo = pkginfos.get(nowItemIndex);
+        switch (itemId){
+            case 0:
+                acu.getUd().tu.copyText(context,pkginfo.toString());
+                break;
+            case 1:
+                Intent intent2 = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                intent2.setData(Uri.parse("package:" + pkginfo.getPkgname()));
+                startActivity(intent2);
+                break;
+            case 2:
+                acu.getEasyManagerUtils().createShortcutsSequentially(context,activity,pkginfo.getPkgname());
+                break;
+        }
+
+        return super.onContextItemSelected(item);
     }
 
     private String[] getManagerMode() {
@@ -204,6 +267,10 @@ public class AppCloneLayoutActivity extends BaseActivity {
         return new String[]{getLanStr(R.string.spin_item_selected),getLanStr(R.string.spin_item_no_selected),getLanStr(R.string.spin_item_all_selected)};
     }
 
+    private String[] getAppChoicesOPT2(){
+        return new String[]{getString(R.string.app_clone_manager_clone_work_profile),getString(R.string.app_clone_manager_clone_work_clone)};
+    }
+
 
     private void spinnerChange(Spinner s,int app_opt_mode){
         s.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -215,6 +282,19 @@ public class AppCloneLayoutActivity extends BaseActivity {
                         break;
                     case 1:
                         APP_CHOICES_INDEX = i;
+                        break;
+                    case  2:
+                        WORK_MODE_INDEX = i;
+                        if(acu.getEasyManagerUtils().isADB() && acu.getEasyManagerUtils().getAppCloneUsers().length == 1){
+                            acmet1.setEnabled(true);
+                            acmet1.setHint(String.format(getLanStr(R.string.app_clone_input_size_hint_str),1));
+                        }else if(acu.getEasyManagerUtils().isROOT()){
+                            acmet1.setHint(String.format(getLanStr(R.string.app_clone_input_size_hint_str),(WORK_MODE_INDEX == 0) ? acu.getPd().easyMUtils.getMaxSupportedUsers(context) : 1));
+                            acmet1.setEnabled(!(WORK_MODE_INDEX == 1) && acmsp3.isEnabled());
+                        }else{
+                            acmet1.setEnabled(false);
+                            acmet1.setHint(String.format(getLanStr(R.string.app_clone_input_size_hint_str),1));
+                        }
                         break;
                 }
             }
@@ -228,7 +308,7 @@ public class AppCloneLayoutActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        OtherTools otherTools = new OtherTools();
+        OtherTools otherTools = OtherTools.Instance();
         otherTools.addMenuBase(this,menu,mode);
         getMenuInflater().inflate(R.menu.main,menu);
         return super.onCreateOptionsMenu(menu);
@@ -265,7 +345,7 @@ public class AppCloneLayoutActivity extends BaseActivity {
         }
 
         if(itemId == 5){
-            new HelpDialogUtils().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
+            HelpDialogUtils.Instance().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
         }
 
         if(itemId == 10){

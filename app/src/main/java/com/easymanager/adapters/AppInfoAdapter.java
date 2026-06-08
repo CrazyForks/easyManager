@@ -14,15 +14,14 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.easymanager.R;
 import com.easymanager.core.api.PackageAPI;
 import com.easymanager.core.entity.TransmissionEntity;
 import com.easymanager.enums.AppInfoEnums;
-import com.easymanager.utils.OtherTools;
-import com.easymanager.utils.PermissionUtils;
-import com.easymanager.utils.easyManagerUtils;
+import com.easymanager.utils.ext.OtherTools;
+import com.easymanager.utils.ext.PermissionUtils;
+import com.easymanager.utils.ext.easyManagerUtils;
 
 import java.util.ArrayList;
 
@@ -117,7 +116,7 @@ public class AppInfoAdapter extends BaseAdapter {
                         }
 
                         if (mode == AppInfoEnums.IS_PERMISSION) {
-                            easyManagerUtils eu = new easyManagerUtils();
+                            easyManagerUtils eu = easyManagerUtils.Instance();
                             String op = eu.permissionToOp(context, rawName, uid);
                             if (op != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                                 String appopsAction = isEnabled ? "deny" : "allow";
@@ -150,7 +149,7 @@ public class AppInfoAdapter extends BaseAdapter {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 switbs.set(i, b);
-                easyManagerUtils eu = new easyManagerUtils();
+                easyManagerUtils eu = easyManagerUtils.Instance();
                 if (mode == AppInfoEnums.IS_PERMISSION) {
                     TransmissionEntity transmissionEntity = new TransmissionEntity(pkgname, rawName, context.getPackageName(), 0, uid);
                     if (b) {

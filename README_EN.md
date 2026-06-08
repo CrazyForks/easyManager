@@ -25,11 +25,21 @@ Unlike them, Light Breeze uses Socket-based TCP communication to execute operati
 Starting with version V1.2.8b, this project is divided into two versions, which are maintained and updated separately: [Light Breeze No-Root Version](https://github.com/MrsEWE44/easyManager/tree/md5) and [Light Breeze Full Version](https://github.com/MrsEWE44/easyManager/tree/master).
 
 
-- V1.3.2a
+- V1.3.3
 
-1.Fixed an issue causing the app to crash when retrieving cloned applications.
+1.Enhanced the App Cloner feature and optimized the user experience.
 
-2.Updated the version number to 1.3.2a.
+2.Added functionality to create shortcuts for cloned apps.
+
+3.Optimized the naming convention for app backup files.
+
+4.Standardized the singleton design pattern for utility classes.
+
+5.Experimented with adding a new data transfer format.
+
+6.Other general optimizations.
+
+7.Updated the version number to 1.3.3.
 
 
 ### Software screenshots:

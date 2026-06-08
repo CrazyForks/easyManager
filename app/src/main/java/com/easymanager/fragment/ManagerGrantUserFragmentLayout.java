@@ -9,7 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.easymanager.R;
-import com.easymanager.utils.easyManagerUtils;
+import com.easymanager.utils.ext.easyManagerUtils;
 
 public class ManagerGrantUserFragmentLayout extends Fragment {
 
@@ -42,7 +42,7 @@ public class ManagerGrantUserFragmentLayout extends Fragment {
     }
 
     private void updateStatusDisplay() {
-        easyManagerUtils ee = new easyManagerUtils();
+        easyManagerUtils ee = easyManagerUtils.Instance();
         boolean serverRunning = ee.getServerStatus();
         
         // 更新服务运行状态文字

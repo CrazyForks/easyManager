@@ -1,4 +1,4 @@
-package com.easymanager.utils;
+package com.easymanager.utils.ext;
 
 import com.easymanager.core.entity.easyManagerClientEntity;
 import com.easymanager.core.entity.easyManagerServiceEntity;
@@ -8,6 +8,15 @@ import com.easymanager.mylife.adbClient;
 import java.io.File;
 
 public class ShellUtils {
+
+    private static ShellUtils instance = null;
+
+    public static ShellUtils Instance(){
+        if(instance == null){
+            instance = new ShellUtils();
+        }
+        return instance;
+    }
 
     public ShellUtils(){}
 

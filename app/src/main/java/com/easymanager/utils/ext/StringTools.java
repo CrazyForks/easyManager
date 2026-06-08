@@ -1,11 +1,20 @@
-package com.easymanager.utils;
+package com.easymanager.utils.ext;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class StringTools {
 
+    private static StringTools instance = null;
+
     public StringTools(){}
+
+    public static StringTools Instance() {
+        if(instance == null){
+            instance = new StringTools();
+        }
+        return instance;
+    }
 
     /**
      * <p>

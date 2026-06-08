@@ -13,7 +13,6 @@ import android.content.IIntentReceiver;
 import android.content.IIntentSender;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.IPackageDataObserver;
 import android.content.pm.IPackageDeleteObserver;
@@ -25,7 +24,6 @@ import android.content.pm.PackageInstaller;
 import android.content.pm.PackageManager;
 import android.content.pm.ParceledListSlice;
 import android.content.pm.ResolveInfo;
-import android.content.pm.ServiceInfo;
 import android.content.pm.SuspendDialogInfo;
 import android.content.pm.UserInfo;
 import android.content.pm.VerificationParams;
@@ -42,11 +40,8 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.permission.IPermissionManager;
+import android.provider.Settings;
 
-import com.easymanager.entitys.MyAccountInfo;
-import com.easymanager.entitys.MyActivityInfo;
-import com.easymanager.entitys.MyApplicationInfo;
-import com.easymanager.entitys.MyPackageInfo;
 import com.easymanager.core.server.Singleton;
 import com.easymanager.core.server.easyManagerBinderWrapper;
 import com.easymanager.core.server.easyManagerPortService;
@@ -63,9 +58,12 @@ import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -117,6 +115,17 @@ public class PackageAPI extends  baseAPI implements Serializable {
 
 
     private String[] disallowedPackages = null;
+
+    private static PackageAPI instance = null;
+
+    public static PackageAPI Instance(){
+        if(instance == null){
+            instance = new PackageAPI();
+        }
+        return instance;
+    }
+
+
 
     public IActivityManager getIActivityManager(){
         IActivityManager iActivityManager = I_ACTIVITY_MANAGER_CACHE.get("iaservice");
@@ -778,6 +787,27 @@ public class PackageAPI extends  baseAPI implements Serializable {
         }
     }
 
+    public ApplicationInfo getApplicationInfo(String packageName, int flags ,int userId){
+        IPackageManager iPackageManager = getIPackageManager();
+        return iPackageManager.getApplicationInfo(packageName,flags,userId);
+    }
+
+    public ApplicationInfo getApplicationInfo(String packageName, long flags ,int userId){
+        IPackageManager iPackageManager = getIPackageManager();
+        return iPackageManager.getApplicationInfo(packageName,flags,userId);
+    }
+
+    public ApplicationInfo getApplicationInfo(String packageName ,int userId){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+            return getApplicationInfo(packageName,0L,userId);
+        }
+        return getApplicationInfo(packageName,0,userId);
+    }
+
+    public boolean isAppExists(String packageName , int userId){
+        return getApplicationInfo(packageName,userId) != null;
+    }
+
     public List<String> getLauncherApps(String pkgName) {
         Intent intent = new Intent();
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -802,15 +832,28 @@ public class PackageAPI extends  baseAPI implements Serializable {
         return list;
     }
 
-
     public String[] getDisallowedPackages(){
+
+        Set<String> SAFE_ALLOW_LIST = new HashSet<>(Arrays.asList(
+                "com.android.settings",
+                "com.android.systemui",
+                "com.android.launcher3",
+                "com.google.android.apps.nexuslauncher",
+                "com.android.permissioncontroller",
+                "com.android.packageinstaller",
+                "com.android.documentsui"
+        ));
+
         if(disallowedPackages == null){
             List<String> launcherApps = getLauncherApps(null);
-            List<MyPackageInfo> installedPackages = getInstalledPackages(getCurrentUser());
+            List<PackageInfo> installedPackages = getInstalledPackages(getCurrentUser());
             ArrayList<String> strings = new ArrayList<>();
-            for (MyPackageInfo myPackageInfo : installedPackages) {
+            for (PackageInfo myPackageInfo : installedPackages) {
                 if(checklauncherApps(launcherApps,myPackageInfo.packageName)){
-                    strings.add(myPackageInfo.packageName);
+                    if(!SAFE_ALLOW_LIST.contains(myPackageInfo.packageName)){
+                        strings.add(myPackageInfo.packageName);
+                    }
+
                 }
             }
             disallowedPackages = new String[strings.size()];
@@ -820,6 +863,7 @@ public class PackageAPI extends  baseAPI implements Serializable {
         }
         return disallowedPackages;
     }
+
 
     public int getMaxSupportedUsers() {
         try {
@@ -848,28 +892,18 @@ public class PackageAPI extends  baseAPI implements Serializable {
     }
 
 
-    public void createUser() {
+    public void createUser(boolean isClone) {
         IUserManager iUserManager = getIUserManager();
         String name = "EAMA";
         int userID = 0;//这个uid设置为0，是因为每个手机用户只有一个主用户，通常它的uid是0，同时也只有这个用户的权限最高
         String userType = USER_TYPE_PROFILE_MANAGED;
+        if(isClone){
+            userType = USER_TYPE_PROFILE_CLONE;
+            name = "EAMACLONE";
+        }
         int flags = 0;
         int sdk_int = Build.VERSION.SDK_INT;
         disallowedPackages = getDisallowedPackages();
-//        if(disallowedPackages == null){
-//            List<String> launcherApps = getLauncherApps(null);
-//            List<MyPackageInfo> installedPackages = getInstalledPackages(getCurrentUser());
-//            ArrayList<String> strings = new ArrayList<>();
-//            for (MyPackageInfo myPackageInfo : installedPackages) {
-//                if(checklauncherApps(launcherApps,myPackageInfo.packageName)){
-//                    strings.add(myPackageInfo.packageName);
-//                }
-//            }
-//            disallowedPackages = new String[strings.size()];
-//            for (int i = 0; i < strings.size(); i++) {
-//                disallowedPackages[i] = strings.get(i);
-//            }
-//        }
         if(sdk_int >= Build.VERSION_CODES.R){
             iUserManager.createProfileForUserWithThrow(name,userType,flags,userID,disallowedPackages);
 //            iUserManager.createProfileForUserWithThrow(name,userType,flags,translatedUserId,null);
@@ -961,25 +995,20 @@ public class PackageAPI extends  baseAPI implements Serializable {
         return current_id;
     }
 
-    public List<MyPackageInfo> getInstalledPackages(int userid){
+    public List<PackageInfo> getInstalledPackages(int userid){
         int flags = 0;
         long flags2 = 0;
         //PackageManager.MATCH_UNINSTALLED_PACKAGES;加上这个flags会同步主用户的应用,建议不要添加,除非你需要排查所有应用
         flags |=  PackageManager.MATCH_DISABLED_COMPONENTS | PackageManager.MATCH_UNINSTALLED_PACKAGES;
         flags2 |=  PackageManager.MATCH_DISABLED_COMPONENTS | PackageManager.MATCH_UNINSTALLED_PACKAGES;
         IPackageManager iPackageManager = getIPackageManager();
-        ArrayList<MyPackageInfo> myPackageInfos = new ArrayList<>();
         ParceledListSlice<PackageInfo> slice = Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU?iPackageManager.getInstalledPackages(flags2,userid):iPackageManager.getInstalledPackages(flags,userid);
-        List<PackageInfo> list = slice.getList();
-        for (PackageInfo packageInfo : list) {
-            MyPackageInfo myPackageInfo = getMyPackageInfo(packageInfo.packageName,userid);
-            if(myPackageInfo != null){
-                myPackageInfos.add(myPackageInfo);
-            }else{
-                myPackageInfos.add(copyPkgInfoToMyPkginfo(packageInfo));
-            }
-        }
-        return myPackageInfos;
+        return slice.getList();
+    }
+
+    public PackageInfo getPackageInfo(String pkgname,int uid){
+        int flags = PackageManager.GET_PERMISSIONS|PackageManager.GET_ACTIVITIES|PackageManager.GET_DISABLED_COMPONENTS|PackageManager.GET_SERVICES|PackageManager.GET_RECEIVERS;
+        return getPackageInfo(pkgname,uid,flags);
     }
 
     public PackageInfo getPackageInfo(String pkgname,int uid,int flags){
@@ -994,81 +1023,20 @@ public class PackageAPI extends  baseAPI implements Serializable {
         }
     }
 
-    public MyPackageInfo getMyPackageInfo(String pkgname , int uid){
-        int flags = PackageManager.GET_PERMISSIONS|PackageManager.GET_ACTIVITIES|PackageManager.GET_DISABLED_COMPONENTS|PackageManager.GET_SERVICES|PackageManager.GET_RECEIVERS;
-        PackageInfo packageInfo = getPackageInfo(pkgname,uid,flags);
-        if(packageInfo == null){
-            return null;
-        }
-        return copyPkgInfoToMyPkginfo(packageInfo);
-
-    }
-
-    public MyApplicationInfo copyPkgInfoAppInfoToMyAppInfo(ApplicationInfo applicationInfo){
-        MyApplicationInfo myApplicationInfo = new MyApplicationInfo(applicationInfo.flags,applicationInfo.uid, applicationInfo.enabled,applicationInfo.sourceDir);
-        return myApplicationInfo;
-    }
-
-    public MyPackageInfo copyPkgInfoToMyPkginfo(PackageInfo packageInfo){
-        ApplicationInfo applicationInfo = packageInfo.applicationInfo;
-        MyApplicationInfo myApplicationInfo = copyPkgInfoAppInfoToMyAppInfo(applicationInfo);
-        ActivityInfo activities[] = packageInfo.activities;
-        ServiceInfo[] services = packageInfo.services;
-        ActivityInfo[] receivers = packageInfo.receivers;
-        MyActivityInfo myActivityInfo[]=new MyActivityInfo[0];
-        MyActivityInfo myServices[]=new MyActivityInfo[0];
-        MyActivityInfo myReceivers[]=new MyActivityInfo[0];
-        if(activities != null && activities.length > 0){
-            myActivityInfo = new MyActivityInfo[activities.length];
-            for (int i = 0; i < activities.length; i++) {
-                ActivityInfo a = activities[i];
-                myActivityInfo[i]=new MyActivityInfo(a.name,a.enabled,a.exported);
-            }
-        }
-        if(services != null && services.length > 0){
-            myServices = new MyActivityInfo[services.length];
-            for (int i = 0; i < services.length; i++) {
-                ServiceInfo service = services[i];
-                myServices[i] = new MyActivityInfo(service.name,service.enabled,service.exported);
-            }
-        }
-        if(receivers != null && receivers.length > 0){
-            myReceivers = new MyActivityInfo[receivers.length];
-            for (int i = 0; i < receivers.length; i++) {
-                ActivityInfo receiver = receivers[i];
-                myReceivers[i] = new MyActivityInfo(receiver.name,receiver.enabled,receiver.exported);
-            }
-        }
-
-        return new MyPackageInfo(packageInfo.packageName,packageInfo.versionCode,packageInfo.versionName,
-                myApplicationInfo,myActivityInfo,myServices,myReceivers,packageInfo.requestedPermissions);
-    }
-
-
 
 
     //两个都须与root才行.
 
-    public ArrayList<MyAccountInfo> getAccounts(){
-        ArrayList<MyAccountInfo> myAccountInfos = new ArrayList<>();
+    public ArrayList<Account> getAccounts(){
+        ArrayList<Account> myAccountInfos = new ArrayList<>();
         Account[] accounts = getIAccountManager().getAccountsAsUser(null,getTranslatedUserId(),"com.android.shell");
-        System.out.println(accounts.length);
-        for (Account account : accounts) {
-            myAccountInfos.add(accountTomyAccount(account));
-        }
+//        System.out.println(accounts.length);
+
 
         //需要root才行。
         getIAccountManager().removeAccountExplicitly(new Account("quark","quark.account"));
 
         return myAccountInfos;
-    }
-
-    public Account myAccountToA(MyAccountInfo myAccountInfo){
-        return new Account(myAccountInfo.getName(), myAccountInfo.getType());
-    }
-
-    public MyAccountInfo accountTomyAccount(Account account){
-        return new MyAccountInfo(account.name,account.type);
     }
 
     class ClearDataObserver extends IPackageDataObserver.Stub {
@@ -1226,5 +1194,54 @@ public class PackageAPI extends  baseAPI implements Serializable {
         }
         return false;
     }
+
+    public void startActivityAsUser(String pkgname , int userid){
+        IActivityManager am = getIActivityManager();
+
+        Intent intent = new Intent(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.fromParts("package", pkgname, null));
+
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+            am.startActivityAsUser(
+                    null,                               // caller
+                    getCallingPackage(),                   // callingPackage
+                    intent,
+                    null,
+                    null,                               // resultTo
+                    null,                               // resultWho
+                    0,                                  // requestCode
+                    Intent.FLAG_ACTIVITY_NEW_TASK,
+                    null,                               // profiler
+                    null,                               // options
+                    userid                                  // userId
+            );
+        }else if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1){
+            try {
+                am.startActivityAsUser(
+                        null,
+                        intent,
+                        null,
+                        null,                               // resultTo
+                        null,                               // resultWho
+                        0,                                  // requestCode
+                        Intent.FLAG_ACTIVITY_NEW_TASK,
+                        null,
+                        null,                               // profiler
+                        null,                               // options
+                        userid                                  // userId
+                );
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public String getInstallerPackageName(String pkgname){
+        return getIPackageManager().getInstallerPackageName(pkgname);
+    }
+
 
 }

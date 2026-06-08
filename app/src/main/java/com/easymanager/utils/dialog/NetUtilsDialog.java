@@ -11,12 +11,21 @@ import android.os.Message;
 import android.view.View;
 
 import com.easymanager.R;
-import com.easymanager.utils.NetUtils;
+import com.easymanager.utils.ext.NetUtils;
 import com.easymanager.utils.base.DialogUtils;
 
 public class NetUtilsDialog extends DialogUtils {
 
     private NetUtils netUtils = new NetUtils();
+
+    private static NetUtilsDialog instance = null;
+
+    public static NetUtilsDialog Instance() {
+        if(instance == null){
+            instance = new NetUtilsDialog();
+        }
+        return instance;
+    }
 
     public void checkupdate(Context context){
         ProgressDialog show = showMyDialog(context,context.getString(R.string.check_app_update));

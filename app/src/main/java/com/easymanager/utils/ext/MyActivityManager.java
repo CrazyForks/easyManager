@@ -1,4 +1,4 @@
-package com.easymanager.utils;
+package com.easymanager.utils.ext;
 
 import android.app.Activity;
 

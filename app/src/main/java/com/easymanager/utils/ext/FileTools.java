@@ -1,4 +1,4 @@
-package com.easymanager.utils;
+package com.easymanager.utils.ext;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -23,6 +23,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileTools extends FileUtils {
+
+    private static FileTools instance;
+
+    public static FileTools Instance(){
+        if(instance == null){
+            instance = new FileTools();
+        }
+        return instance;
+    }
+
 
     //调用系统文件选择器选择一个文件夹
     public void execDirSelect(Context context, Activity activity, String msg) {
@@ -62,7 +72,7 @@ public class FileTools extends FileUtils {
     //选择文件时，判断是否为理想类型
     public void selectFile(Context context, String storage, Uri uri, ArrayList<String> list, ArrayList<Boolean> checkboxs, String msg, String equalstr) {
         String filePath = storage + "/" + uri.getPath().replaceAll("/document/primary:", "");
-        String fileName = new StringTools().getPathByLastNameType(filePath);
+        String fileName = StringTools.Instance().getPathByLastNameType(filePath);
         if (fileName.equals(equalstr)) {
 //            filePath=filePath.substring(0,filePath.lastIndexOf("/"));
             list.add(filePath);
@@ -188,7 +198,7 @@ public class FileTools extends FileUtils {
     }
 
     public void clearAppFiles(Context context,int uid){
-        String local_adb_path = new ConfigUtils().getCachePathOnXML();
+        String local_adb_path = ConfigUtils.Instance().getCachePathOnXML();
         String storage_path = getSDPath(uid)+"/easyManager";
         for(String s : new String[]{local_adb_path,storage_path}){
             File file = new File(s);

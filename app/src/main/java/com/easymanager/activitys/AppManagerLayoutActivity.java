@@ -12,6 +12,7 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.text.InputType;
 import android.view.ContextMenu;
@@ -34,16 +35,16 @@ import com.easymanager.core.enums.AppopsPermissionStr;
 import com.easymanager.entitys.PKGINFO;
 import com.easymanager.enums.AppManagerEnum;
 import com.easymanager.enums.easyManagerEnums;
-import com.easymanager.utils.ConfigUtils;
-import com.easymanager.utils.FileTools;
-import com.easymanager.utils.MyActivityManager;
-import com.easymanager.utils.OtherTools;
-import com.easymanager.utils.PackageUtils;
-import com.easymanager.utils.StringTools;
+import com.easymanager.utils.ext.ConfigUtils;
+import com.easymanager.utils.ext.FileTools;
+import com.easymanager.utils.ext.MyActivityManager;
+import com.easymanager.utils.ext.OtherTools;
+import com.easymanager.utils.ext.PackageUtils;
+import com.easymanager.utils.ext.StringTools;
 import com.easymanager.utils.base.AppCloneUtils;
 import com.easymanager.utils.dialog.HelpDialogUtils;
-import com.easymanager.utils.easyManagerUtils;
-import com.easymanager.utils.permissionRequest;
+import com.easymanager.utils.ext.easyManagerUtils;
+import com.easymanager.utils.ext.permissionRequest;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -74,10 +75,10 @@ public class AppManagerLayoutActivity extends BaseActivity {
     private int APP_CLEAN_TIME = 2,APP_CLEAN_TIME_TYPE = 0;
 
     private boolean install_mode = false;
-    private AppCloneUtils acu = new AppCloneUtils();
+    private AppCloneUtils acu = AppCloneUtils.Instance();
     private PackageUtils packageUtils = acu.getPd().packageUtils;
     private FileTools ft = acu.getPd().ft;
-    private ConfigUtils configUtils = new ConfigUtils();
+    private ConfigUtils configUtils = ConfigUtils.Instance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -230,7 +231,7 @@ public class AppManagerLayoutActivity extends BaseActivity {
                         configUtils.updateUninstallPkgs(context, list, true);
                         acu.getPd().showProcessBarDialogByCMD(context,list,AppManagerEnum.APP_UNINSTALL,APP_PERMIS_OPT_INDEX,null,uid);
                         if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.M){
-                            easyManagerUtils ee = new easyManagerUtils();
+                            easyManagerUtils ee = easyManagerUtils.Instance();
                             if(ee.isROOT()){
                                 ee.activeRoot(context);
                             }else {
@@ -264,7 +265,7 @@ public class AppManagerLayoutActivity extends BaseActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 PKGINFO pkginfo = pkginfos.get(i);
                 try {
-                    PackageInfo packageInfo = getPackageManager().getPackageInfo(pkginfo.getPkgname(), 0);
+                    PackageInfo packageInfo = acu.getEasyManagerUtils().getPackageInfo(context,pkginfo.getPkgname(), uid);
                     Intent intent = new Intent(AppManagerLayoutActivity.this,AppInfoLayoutActivity.class);
                     intent.putExtra("pkgname",packageInfo.packageName);
                     intent.putExtra("uid",uid);
@@ -272,7 +273,7 @@ public class AppManagerLayoutActivity extends BaseActivity {
                     intent.putExtra("isADB",isADB);
                     intent.putExtra("isDevice",isDevice);
                     startActivity(intent);
-                } catch (PackageManager.NameNotFoundException e) {
+                } catch (Exception e) {
                     Toast.makeText(context, getLanStr(R.string.not_installed_app), Toast.LENGTH_SHORT).show();
                 }
             }
@@ -309,9 +310,14 @@ public class AppManagerLayoutActivity extends BaseActivity {
                 acu.getUd().tu.copyText(context,pkginfos.get(nowItemIndex).toString());
                 break;
             case 1:
-                Intent intent2 = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                intent2.setData(Uri.parse("package:" + pkginfos.get(nowItemIndex).getPkgname()));
-                startActivity(intent2);
+                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1){
+                    acu.getEasyManagerUtils().startActivityAsUser(context,pkginfos.get(nowItemIndex).getPkgname(),uid);
+                }else{
+                    Intent intent2 = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    intent2.setData(Uri.parse("package:" + pkginfos.get(nowItemIndex).getPkgname()));
+                    startActivity(intent2);
+                }
+
                 break;
             case 2:
                 ArrayList<PKGINFO> pkgList = getAddedPKGList();
@@ -352,12 +358,6 @@ public class AppManagerLayoutActivity extends BaseActivity {
                         break;
                     case 1:
                         APP_PERMIS_OPT_INDEX = i;
-//                        if(mode == AppManagerEnum.APP_INSTALL_LOCAL_FILE){
-//                            amlsp1.setEnabled(false);
-//                        }else{
-//                            amlsp1.setEnabled((i == 0)?false:true);
-//                        }
-
                         if(mode == AppManagerEnum.APP_CLEAN_PROCESS && APP_PERMIS_OPT_INDEX == 1){
                             EditText input = new EditText(context);
                             Spinner sp = new Spinner(context);
@@ -473,7 +473,7 @@ public class AppManagerLayoutActivity extends BaseActivity {
                             }
                             packageUtils.clearList(pkginfos,checkboxs);
                             acu.getUd().showPKGS(context,apllv1,pkginfos,checkboxs);
-                            new HelpDialogUtils().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
+                            HelpDialogUtils.Instance().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
                         }
                         break;
                 }
@@ -489,7 +489,7 @@ public class AppManagerLayoutActivity extends BaseActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        OtherTools otherTools = new OtherTools();
+        OtherTools otherTools = OtherTools.Instance();
         otherTools.addMenuBase(this,menu,mode);
         if(mode == AppManagerEnum.APP_UNINSTALL || mode == AppManagerEnum.APP_DISABLE_COMPENT
                 || mode == AppManagerEnum.APP_RESTORE_UNINSTALL_APP || mode == AppManagerEnum.APP_FIREWALL
@@ -552,7 +552,7 @@ public class AppManagerLayoutActivity extends BaseActivity {
         }
 
         if(itemId == 5){
-            new HelpDialogUtils().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
+            HelpDialogUtils.Instance().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
         }
 
         if(itemId == 6){
@@ -622,11 +622,11 @@ public class AppManagerLayoutActivity extends BaseActivity {
         }else{
             filePath=uri.getPath();
         }
-        StringTools st = new StringTools();
+        StringTools st = StringTools.Instance();
         String nameType = st.getPathByLastNameType(filePath);
         if(nameType.equals("apk")){
             PackageInfo packageInfo = pm.getPackageArchiveInfo(filePath, PackageManager.GET_ACTIVITIES);
-            PKGINFO pkginfo = packageUtils.getPKGINFO(pm, packageInfo,filePath);
+            PKGINFO pkginfo = packageUtils.getPKGINFO(pm, packageInfo,filePath,uid);
             if(pkginfo == null){
                 File file = new File(filePath);
                 if(file.exists()){
@@ -653,7 +653,7 @@ public class AppManagerLayoutActivity extends BaseActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        PackageUtils pkgutils = new PackageUtils();
+        PackageUtils pkgutils = PackageUtils.Instance();
         String storage = ft.getSDPath(uid);
         PackageManager pm = getPackageManager();
         if(requestCode == 0){

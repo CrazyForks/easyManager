@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.easymanager.R;
 import com.easymanager.core.api.PackageAPI;
 import com.easymanager.core.entity.TransmissionEntity;
+import com.easymanager.core.utils.CMD;
 import com.easymanager.entitys.PKGINFO;
 import com.easymanager.enums.easyManagerEnums;
 import com.easymanager.utils.base.DialogUtils;
@@ -24,6 +25,15 @@ import com.easymanager.utils.base.DialogUtils;
 import java.util.ArrayList;
 
 public class UserDialog extends DialogUtils {
+
+    private static UserDialog instance = null;
+
+    public static UserDialog Instance() {
+        if(instance == null){
+            instance = new UserDialog();
+        }
+        return instance;
+    }
 
     public void showAppCloneManagerProcessBarDialog(Context context, ArrayList<PKGINFO> list, ArrayList<String> strlist, int APP_PERMIS_INDEX){
         int size = list.size();
@@ -69,7 +79,7 @@ public class UserDialog extends DialogUtils {
         return false;
     }
 
-    public void showAppClone(Context context, ArrayList<PKGINFO> list,Integer count,String title,String text){
+    public void showAppClone(Context context,Activity activity, ArrayList<PKGINFO> list,Integer count,String title,String text,int WORK_MODE_INDEX){
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(title);
         View vvv = LayoutInflater.from(context).inflate(R.layout.download_process_bar, null);
@@ -88,44 +98,58 @@ public class UserDialog extends DialogUtils {
         new Thread(new Runnable() {
             @Override
             public void run() {
+                if(list.size() > 0){
 
-                String[] firstUsers = easyMUtils.getAppCloneUsers();
-                for (int i = 1; i <= count; i++) {
-                    easyMUtils.createAppClone(context);
-                    sendProcessBarHandlerSum(mUpdateProgressHandler,i,count,new PKGINFO(i+"",i+"",null,null,null,null));
-                }
+                    String[] firstUsers = easyMUtils.getAppCloneUsers();
+                    for (int i = 1; i <= count; i++) {
+                        if(WORK_MODE_INDEX == 0){
+                            easyMUtils.createAppClone(context);
+                        }else{
+                            easyMUtils.createAppClone2(context);
+                        }
+
+                        sendProcessBarHandlerSum(mUpdateProgressHandler,i,count,new PKGINFO(i+"",i+"",null,null,null,null));
+                    }
 
 
-                String[] users = easyMUtils.getAppCloneUsers();
-                if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1){
-                    String[] disallowedPackages = easyMUtils.getDisallowedPackages(context);
-                    if(disallowedPackages!=null && disallowedPackages.length > 0){
-                        for (String user : users) {
-                            int userid = Integer.valueOf(user);
-                            if(!isFirstUser(firstUsers,user)){
-                                for (String aPackage : disallowedPackages) {
-                                    easyMUtils.uninstallAPK(context,aPackage,userid);
+                    String[] users = easyMUtils.getAppCloneUsers();
+                    if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.N_MR1){
+                        String[] disallowedPackages = easyMUtils.getDisallowedPackages(context);
+                        if(disallowedPackages!=null && disallowedPackages.length > 0){
+                            for (String user : users) {
+                                int userid = Integer.valueOf(user);
+                                if(!isFirstUser(firstUsers,user)){
+                                    for (String aPackage : disallowedPackages) {
+                                        easyMUtils.uninstallAPK(context,aPackage,userid);
+                                    }
                                 }
                             }
                         }
                     }
-                }
-
-                for (int j = 0; j < list.size(); j++) {
-                    PKGINFO pkginfo = list.get(j);
-                    for (String s : users) {
-                        int userid = Integer.valueOf(s);
-                        if(!isFirstUser(firstUsers,s)){
-                            easyMUtils.installExistingPKG(context,pkginfo.getPkgname(),userid);
-                            easyMUtils.setComponentOrPackageEnabledState(new TransmissionEntity(pkginfo.getPkgname(), null, context.getPackageName(), PackageAPI.COMPONENT_ENABLED_STATE_ENABLED,userid));
+                    ArrayList<Integer> uids = new ArrayList<>();
+                    for (int j = 0; j < list.size(); j++) {
+                        PKGINFO pkginfo = list.get(j);
+                        for (String s : users) {
+                            int userid = Integer.valueOf(s);
+                            if(!isFirstUser(firstUsers,s)){
+                                uids.add(userid);
+                                easyMUtils.installExistingPKG(context,pkginfo.getPkgname(),userid);
+                                easyMUtils.setComponentOrPackageEnabledState(new TransmissionEntity(pkginfo.getPkgname(), null, context.getPackageName(), PackageAPI.COMPONENT_ENABLED_STATE_ENABLED,userid));
+                            }
                         }
                     }
-                }
 
-                for (String user : users) {
-                    int uid = Integer.valueOf(user);
-                    if(!user.equals(String.valueOf(currentUser)) && uid < 900){
-                        easyMUtils.startAppClone(context,uid);
+                    for (PKGINFO pkginfo : list) {
+                        easyMUtils.createShortcutsSequentially(context,activity,uids,pkginfo.getPkgname());
+                    }
+
+                    for (String user : users) {
+                        int uid = Integer.valueOf(user);
+                        if(!user.equals(String.valueOf(currentUser)) && uid < 900){
+                            String cmdstr = String.format("settings --user %d put secure user_setup_complete 1;settings --user %d put global device_provisioned 1",uid,uid);
+                            CMD cmd = easyMUtils.runCMD(cmdstr);
+                            easyMUtils.startAppClone(context,uid);
+                        }
                     }
                 }
                 mUpdateProgressHandler.sendEmptyMessage(1);
@@ -200,6 +224,5 @@ public class UserDialog extends DialogUtils {
             }
         }).start();
     }
-
 
 }

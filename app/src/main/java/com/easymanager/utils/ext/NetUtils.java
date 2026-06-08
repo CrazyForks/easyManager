@@ -1,4 +1,4 @@
-package com.easymanager.utils;
+package com.easymanager.utils.ext;
 
 import android.app.DownloadManager;
 import android.content.Context;
@@ -15,7 +15,7 @@ import java.net.URL;
 
 public class NetUtils {
 
-    public StringTools st = new StringTools();
+    public StringTools st = StringTools.Instance();
 
 
     public boolean checkUpdate(Context context){

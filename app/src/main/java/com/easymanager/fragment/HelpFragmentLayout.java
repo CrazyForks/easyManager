@@ -15,10 +15,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.easymanager.R;
-import com.easymanager.utils.NonScrollExpandableListView;
-import com.easymanager.utils.OtherTools;
-import com.easymanager.utils.TextUtils;
+import com.easymanager.utils.view.NonScrollExpandableListView;
+import com.easymanager.utils.ext.OtherTools;
+import com.easymanager.utils.ext.TextUtils;
 import com.easymanager.utils.dialog.NetUtilsDialog;
+import com.easymanager.utils.view.ThemeUtils;
 
 public class HelpFragmentLayout extends Fragment {
 
@@ -38,8 +39,8 @@ public class HelpFragmentLayout extends Fragment {
     private NonScrollExpandableListView hflelv;
     private Button hflcheckupdate,hfl_theme_mode,hflcleanfile,hflopengithub,hflopengitee,hfl_donate;
     private TextView hfl_app_version;
-    private NetUtilsDialog nu = new NetUtilsDialog();
-    private OtherTools ot = new OtherTools();
+    private NetUtilsDialog nu = NetUtilsDialog.Instance();
+    private OtherTools ot = OtherTools.Instance();
     private TextUtils tvvv = nu.tu;
 
     public HelpFragmentLayout() {
@@ -146,25 +147,25 @@ public class HelpFragmentLayout extends Fragment {
     }
 
     private void toggleTheme() {
-        int currentMode = com.easymanager.utils.ThemeUtils.getThemeMode(context);
+        int currentMode = ThemeUtils.getThemeMode(context);
         int nextMode;
-        if (currentMode == com.easymanager.utils.ThemeUtils.MODE_SYSTEM) {
-            nextMode = com.easymanager.utils.ThemeUtils.MODE_LIGHT;
-        } else if (currentMode == com.easymanager.utils.ThemeUtils.MODE_LIGHT) {
-            nextMode = com.easymanager.utils.ThemeUtils.MODE_DARK;
+        if (currentMode == ThemeUtils.MODE_SYSTEM) {
+            nextMode = ThemeUtils.MODE_LIGHT;
+        } else if (currentMode == ThemeUtils.MODE_LIGHT) {
+            nextMode = ThemeUtils.MODE_DARK;
         } else {
-            nextMode = com.easymanager.utils.ThemeUtils.MODE_SYSTEM;
+            nextMode = ThemeUtils.MODE_SYSTEM;
         }
-        com.easymanager.utils.ThemeUtils.setThemeMode(context, nextMode);
+        ThemeUtils.setThemeMode(context, nextMode);
         getActivity().recreate();
     }
 
     private void updateThemeButtonText() {
-        int mode = com.easymanager.utils.ThemeUtils.getThemeMode(context);
+        int mode = ThemeUtils.getThemeMode(context);
         String text;
-        if (mode == com.easymanager.utils.ThemeUtils.MODE_LIGHT) {
+        if (mode == ThemeUtils.MODE_LIGHT) {
             text = getString(R.string.help_theme_mode_button) + ": " + getString(R.string.theme_mode_light);
-        } else if (mode == com.easymanager.utils.ThemeUtils.MODE_DARK) {
+        } else if (mode == ThemeUtils.MODE_DARK) {
             text = getString(R.string.help_theme_mode_button) + ": " + getString(R.string.theme_mode_dark);
         } else {
             text = getString(R.string.help_theme_mode_button) + ": " + getString(R.string.theme_mode_system);

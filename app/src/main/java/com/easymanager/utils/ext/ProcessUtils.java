@@ -1,12 +1,10 @@
-package com.easymanager.utils;
+package com.easymanager.utils.ext;
 
 import android.app.Activity;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
-import com.easymanager.entitys.MyApplicationInfo;
-import com.easymanager.entitys.MyPackageInfo;
 import com.easymanager.core.entity.TransmissionEntity;
 import com.easymanager.entitys.PKGINFO;
 
@@ -15,9 +13,19 @@ import java.util.List;
 
 public class ProcessUtils {
 
-    private PackageUtils packageUtils = new PackageUtils();
+    private PackageUtils packageUtils = PackageUtils.Instance();
 
-    private easyManagerUtils ee = new easyManagerUtils();
+    private easyManagerUtils ee = easyManagerUtils.Instance();
+
+    private static ProcessUtils instance = null;
+
+    public static ProcessUtils Instance(){
+        if(instance == null){
+            instance = new ProcessUtils();
+        }
+        return instance;
+    }
+
 
     public ProcessUtils(){}
 
@@ -41,19 +49,19 @@ public class ProcessUtils {
         packageUtils.sortPKGINFOS(pkginfos);
     }
 
-    public void queryRunningPKGSByUIDCore(List<MyPackageInfo> installedPackages, ArrayList<PKGINFO> pkginfos , ArrayList<Boolean> checkboxs, PackageManager packageManager, boolean isAll){
+    public void queryRunningPKGSByUIDCore(List<PackageInfo> installedPackages, ArrayList<PKGINFO> pkginfos , ArrayList<Boolean> checkboxs, PackageManager packageManager, boolean isAll,int uid){
         packageUtils.clearList(pkginfos,checkboxs);
-        for (MyPackageInfo packageInfo : installedPackages) {
-            MyApplicationInfo info = packageInfo.myapplicationInfo;
+        for (PackageInfo packageInfo : installedPackages) {
+            ApplicationInfo info = packageInfo.applicationInfo;
             if (isAll) {
                 if (((ApplicationInfo.FLAG_STOPPED & info.flags) == 0)) {
-                    packageUtils.appInfoAdd(packageManager,packageInfo,pkginfos,checkboxs);
+                    packageUtils.appInfoAdd(packageManager,packageInfo,pkginfos,checkboxs,uid);
                 }
             } else {
                 if (((ApplicationInfo.FLAG_SYSTEM & info.flags) == 0)
                         && ((ApplicationInfo.FLAG_UPDATED_SYSTEM_APP & info.flags) == 0)
                         && ((ApplicationInfo.FLAG_STOPPED & info.flags) == 0)) {
-                    packageUtils.appInfoAdd(packageManager,packageInfo,pkginfos,checkboxs);
+                    packageUtils.appInfoAdd(packageManager,packageInfo,pkginfos,checkboxs,uid);
                 }
             }
         }
@@ -69,8 +77,8 @@ public class ProcessUtils {
     }
 
     public void queryRunningPKGSByUID(Activity activity, ArrayList<PKGINFO> pkginfos , ArrayList<Boolean> checkboxs,Integer uid){
-        List<MyPackageInfo> installedPackages = ee.getInstalledPackages(new TransmissionEntity(null,null,activity.getPackageName(),0,uid));
-        queryRunningPKGSByUIDCore(installedPackages,pkginfos,checkboxs,activity.getPackageManager(),false);
+        List<PackageInfo> installedPackages = ee.getInstalledPackages(new TransmissionEntity(null,null,activity.getPackageName(),0,uid));
+        queryRunningPKGSByUIDCore(installedPackages,pkginfos,checkboxs,activity.getPackageManager(),false,uid);
     }
 
     //查询当前运行在后台的应用，所有
@@ -80,8 +88,8 @@ public class ProcessUtils {
         queryRunningPKGSCore(installedPackages,pkginfos,checkboxs,packageManager,true);
     }
     public void queryAllRunningPKGSByUID(Activity activity, ArrayList<PKGINFO> pkginfos , ArrayList<Boolean> checkboxs,Integer uid){
-        List<MyPackageInfo> installedPackages = ee.getInstalledPackages(new TransmissionEntity(null,null,activity.getPackageName(),0,uid));
-        queryRunningPKGSByUIDCore(installedPackages,pkginfos,checkboxs,activity.getPackageManager(),true);
+        List<PackageInfo> installedPackages = ee.getInstalledPackages(new TransmissionEntity(null,null,activity.getPackageName(),0,uid));
+        queryRunningPKGSByUIDCore(installedPackages,pkginfos,checkboxs,activity.getPackageManager(),true,uid);
     }
 
 }

@@ -25,9 +25,9 @@ import com.easymanager.R;
 import com.easymanager.entitys.PKGINFO;
 import com.easymanager.utils.base.DialogUtils;
 import com.easymanager.utils.dialog.HelpDialogUtils;
-import com.easymanager.utils.MyActivityManager;
-import com.easymanager.utils.OtherTools;
-import com.easymanager.utils.PackageUtils;
+import com.easymanager.utils.ext.MyActivityManager;
+import com.easymanager.utils.ext.OtherTools;
+import com.easymanager.utils.ext.PackageUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -65,10 +65,12 @@ public class FileSharedLayoutActivity extends BaseActivity {
     private Context context;
     private Activity activity;
     private int mode,default_port = 25444;
+    private Boolean isRoot , isADB,isDevice;
+    private Integer uid;
 
     private HttpServer httpServer;
 
-    private DialogUtils du = new DialogUtils();
+    private DialogUtils du = DialogUtils.Instance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +86,10 @@ public class FileSharedLayoutActivity extends BaseActivity {
         activity = this;
         Intent intent = getIntent();
         mode = intent.getIntExtra("mode",-1);
+        isRoot = intent.getBooleanExtra("isRoot",false);
+        isADB = intent.getBooleanExtra("isADB",false);
+        isDevice = intent.getBooleanExtra("isDevice",false);
+        uid = intent.getIntExtra("uid",0);
         fsisharedip = findViewById(R.id.fsisharedip);
         fsisharedport = findViewById(R.id.fsisharedport);
         fsladdfile = findViewById(R.id.fsladdfile);
@@ -92,7 +98,7 @@ public class FileSharedLayoutActivity extends BaseActivity {
         fslstopshared = findViewById(R.id.fslstopshared);
         fsllv = findViewById(R.id.fsllv);
         clickBt();
-        new HelpDialogUtils().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
+        HelpDialogUtils.Instance().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
     }
 
     private void clickBt() {
@@ -213,7 +219,7 @@ public class FileSharedLayoutActivity extends BaseActivity {
                 if(isFile){
                     getLocalFiles(extstorage,null,flist,checkboxs,fssdllv);
                 }else{
-                    PackageUtils packageUtils = new PackageUtils();
+                    PackageUtils packageUtils = PackageUtils.Instance();
                     packageUtils.queryUserEnablePKGS(activity,pkginfos,checkboxs,0);
                     du.showPKGS(context,fssdllv,pkginfos,checkboxs);
                 }
@@ -310,7 +316,7 @@ public class FileSharedLayoutActivity extends BaseActivity {
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        OtherTools otherTools = new OtherTools();
+        OtherTools otherTools = OtherTools.Instance();
         otherTools.addMenuBase(this,menu,mode);
         return super.onCreateOptionsMenu(menu);
     }
@@ -330,7 +336,7 @@ public class FileSharedLayoutActivity extends BaseActivity {
         }
 
         if(itemId == 5){
-            new HelpDialogUtils().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
+            HelpDialogUtils.Instance().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
         }
 
         if(itemId == 6){

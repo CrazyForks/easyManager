@@ -346,4 +346,7 @@
     <string name="perm_network">Network</string>
     <string name="perm_wifi">Wi-Fi</string>
     <string name="help_layout_donate">Donate Support Authors</string>
+    <string name="app_clone_manager_clone_work_profile">Work Profile</string>
+    <string name="app_clone_manager_clone_work_clone">Clone Profile</string>
+    <string name="create_shortcut">Create Shortcut</string>
 </resources>

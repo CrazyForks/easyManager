@@ -17,23 +17,32 @@ import com.easymanager.adapters.GeneralAdapter;
 import com.easymanager.adapters.PKGINFOAdapter;
 import com.easymanager.core.utils.CMD;
 import com.easymanager.entitys.PKGINFO;
-import com.easymanager.utils.FileTools;
-import com.easymanager.utils.PackageUtils;
-import com.easymanager.utils.ProcessUtils;
-import com.easymanager.utils.easyManagerUtils;
+import com.easymanager.utils.ext.FileTools;
+import com.easymanager.utils.ext.PackageUtils;
+import com.easymanager.utils.ext.ProcessUtils;
+import com.easymanager.utils.ext.easyManagerUtils;
 
 import java.io.File;
 import java.util.ArrayList;
 
 public class DialogUtils extends DialogBaseUtils {
-    public FileTools ft = new FileTools();
-    public PackageUtils packageUtils = new PackageUtils();
+    public FileTools ft = FileTools.Instance();
+    public PackageUtils packageUtils = PackageUtils.Instance();
 
-    public ProcessUtils processUtils = new ProcessUtils();
+    public ProcessUtils processUtils = ProcessUtils.Instance();
 
-    public easyManagerUtils easyMUtils = new easyManagerUtils();
+    public easyManagerUtils easyMUtils = easyManagerUtils.Instance();
+
+    private static DialogUtils instance = null;
 
     public DialogUtils(){}
+
+    public static DialogUtils Instance() {
+        if(instance == null){
+            instance = new DialogUtils();
+        }
+        return instance;
+    }
 
     public void findLocalImgDialog(Context context, Activity activity, ListView lv1 , ArrayList<String> strings, ArrayList<Boolean> checkboxs){
         ProgressDialog show = showMyDialog(context,tu.getLanguageString(context,R.string.scanner_local_img));

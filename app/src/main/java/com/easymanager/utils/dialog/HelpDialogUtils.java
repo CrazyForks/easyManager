@@ -13,6 +13,15 @@ public class HelpDialogUtils extends DialogBaseUtils {
     public final static int APP_INFO_HELP=2;
     public final static int RUN_COMMAND_HELP=3;
 
+    private static HelpDialogUtils instance = null;
+
+    public static HelpDialogUtils Instance() {
+        if(instance == null){
+            instance = new HelpDialogUtils();
+        }
+        return instance;
+    }
+
     public android.app.AlertDialog showHelp(Context  context, int mode1 , int mode2){
         android.app.AlertDialog dialog = null;
         if(mode1 == MAIN_HELP){

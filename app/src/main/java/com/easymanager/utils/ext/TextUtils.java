@@ -1,4 +1,4 @@
-package com.easymanager.utils;
+package com.easymanager.utils.ext;
 
 import android.app.Activity;
 import android.content.ClipboardManager;
@@ -10,11 +10,18 @@ import com.easymanager.R;
 import com.easymanager.entitys.PKGINFO;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 
 public class TextUtils {
+
+    private static TextUtils instance = null;
+
+    public static TextUtils Instance() {
+        if(instance == null){
+            instance = new TextUtils();
+        }
+        return instance;
+    }
 
     public TextUtils(){}
 
@@ -31,7 +38,7 @@ public class TextUtils {
     //搜索列表匹配项
     public ArrayList<PKGINFO> indexOfPKGS(Activity activity, String findStr, ArrayList<PKGINFO> pkginfos , ArrayList<Boolean> checkboxs, Integer types){
         if(pkginfos.size() == 0){
-            PackageUtils packageUtils = new PackageUtils();
+            PackageUtils packageUtils = PackageUtils.Instance();
             packageUtils.queryPKGS(activity,pkginfos,checkboxs,types);
         }
         return indexOfPKGS(pkginfos,checkboxs,findStr);

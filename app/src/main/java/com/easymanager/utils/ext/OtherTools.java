@@ -1,8 +1,7 @@
-package com.easymanager.utils;
+package com.easymanager.utils.ext;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
@@ -12,7 +11,17 @@ import com.easymanager.enums.AppManagerEnum;
 import com.easymanager.utils.base.DialogBaseUtils;
 
 public class OtherTools {
-    private TextUtils tv = new TextUtils();
+    private TextUtils tv = TextUtils.Instance();
+
+    private static OtherTools instance = null;
+
+    public static OtherTools Instance(){
+        if(instance == null){
+            instance = new OtherTools();
+        }
+        return instance;
+    }
+
 
     //显示一个弹窗
     public static void showInfoMsg(Context context, String title, String msg) {

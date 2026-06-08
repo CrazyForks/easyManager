@@ -15,6 +15,15 @@
         android:orientation="vertical"
         android:layout_marginBottom="16dp">
 
+        <Spinner
+            android:id="@+id/acmsp3"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/input_field_background"
+            android:layout_marginRight="4dp"
+            android:layout_marginBottom="12dp"
+            />
+
         <EditText
             android:id="@+id/acmet1"
             android:layout_width="match_parent"

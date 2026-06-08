@@ -16,7 +16,7 @@ import com.easymanager.activitys.FileSharedLayoutActivity;
 import com.easymanager.activitys.RunCommandLayoutActivity;
 import com.easymanager.activitys.UsbModeLayoutActivity;
 import com.easymanager.enums.AppManagerEnum;
-import com.easymanager.utils.OtherTools;
+import com.easymanager.utils.ext.OtherTools;
 
 public class HomeFragmentLayout extends Fragment {
 
@@ -28,7 +28,7 @@ public class HomeFragmentLayout extends Fragment {
 
     private int uid;
 
-    private OtherTools ot = new OtherTools();
+    private OtherTools ot = OtherTools.Instance();
 
 
     public HomeFragmentLayout(){}

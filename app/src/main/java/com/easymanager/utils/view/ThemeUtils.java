@@ -1,4 +1,4 @@
-package com.easymanager.utils;
+package com.easymanager.utils.view;
 
 import android.app.Activity;
 import android.content.Context;

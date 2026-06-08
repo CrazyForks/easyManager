@@ -1,15 +1,21 @@
-package com.easymanager.utils;
+package com.easymanager.utils.ext;
 
+import android.accounts.Account;
+import android.app.Activity;
+import android.app.PendingIntent;
 import android.app.admin.DevicePolicyManager;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
 import android.os.Build;
 import android.os.Process;
 
 import com.easymanager.core.api.PackageAPI;
-import com.easymanager.entitys.MyAccountInfo;
+import com.easymanager.core.api.baseAPI;
 import com.easymanager.entitys.MyAppopsInfo;
-import com.easymanager.entitys.MyPackageInfo;
 import com.easymanager.core.entity.TransmissionEntity;
 import com.easymanager.core.entity.easyManagerClientEntity;
 import com.easymanager.core.entity.easyManagerServiceEntity;
@@ -20,6 +26,7 @@ import com.easymanager.mylife.adbClient;
 import com.easymanager.mylife.easyMDeviceAdminReceiver;
 import com.easymanager.mylife.startAdbService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -36,6 +43,15 @@ public class easyManagerUtils {
     private String currentErrorStr ;
     private ComponentName easyMDPMComName = null;
 
+    private static easyManagerUtils instance = null;
+
+    public static easyManagerUtils Instance() {
+        if (instance == null) {
+            instance = new easyManagerUtils();
+        }
+        return instance;
+    }
+
     private void putOptionOnServer(easyManagerClientEntity adben2){
         adbClient ac = new adbClient(adben2, new adbClient.SocketListener() {
             @Override
@@ -47,6 +63,7 @@ public class easyManagerUtils {
         if(ee != null){
             isDead =  ee.isDead();
             currentErrorStr = ee.getErrorMsg();
+            System.out.println(currentErrorStr);
         }
     }
 
@@ -335,7 +352,7 @@ public class easyManagerUtils {
     }
 
     public void dumpAPK(String apksourcepath,String outpath){
-        FileUtils fu = new FileUtils();
+        FileUtils fu = FileUtils.Instance();
         fu.copyFile(apksourcepath,outpath);
     }
 
@@ -424,6 +441,14 @@ public class easyManagerUtils {
         }
     }
 
+    public void createAppClone2(Context context) {
+        if(!isDead || skipError){
+            TransmissionEntity entity = new TransmissionEntity(null,null,context.getPackageName(),0,getCurrentUserID());
+            easyManagerClientEntity adben2 = new easyManagerClientEntity(null,entity,easyManagerEnums.APP_CLONE2);
+            putOptionOnServer(adben2);
+        }
+    }
+
     public void removeAppClone(Context context , int removeuid) {
         if(!isDead || skipError){
             TransmissionEntity entity = new TransmissionEntity(null,null,context.getPackageName(),0,removeuid);
@@ -453,20 +478,25 @@ public class easyManagerUtils {
         return new String[]{"0"};
     }
 
-    public List<MyPackageInfo> getInstalledPackages(TransmissionEntity entity){
+    public List<PackageInfo> getInstalledPackages(TransmissionEntity entity){
         if(!isDead || skipError){
             easyManagerClientEntity adben2 = new easyManagerClientEntity(null,entity,easyManagerEnums.QUERY_PACKAGES_UID);
             putOptionOnServer(adben2);
-            return (List<MyPackageInfo>) getEasyManagerServiceEntity().getObject();
+            byte[] bb = (byte[]) getEasyManagerServiceEntity().getObject();
+            List<PackageInfo> p = baseAPI.Instance().bytesToList(bb,PackageInfo.CREATOR);
+            return p;
         }
         return null;
     }
 
-    public MyPackageInfo getMyPackageInfo(TransmissionEntity entity){
+    public PackageInfo getPackageInfo(Context context ,String pkgname, int uid){
         if(!isDead || skipError){
+            TransmissionEntity entity = new TransmissionEntity(pkgname, null, context.getPackageName(), 0, uid);
             easyManagerClientEntity adben2 = new easyManagerClientEntity(null,entity,easyManagerEnums.GET_PACKAGEINFO_UID);
             putOptionOnServer(adben2);
-            return (MyPackageInfo) getEasyManagerServiceEntity().getObject();
+            byte[] bb = (byte[]) getEasyManagerServiceEntity().getObject();
+            PackageInfo p = baseAPI.Instance().bytesToParcelable(bb,PackageInfo.CREATOR);
+            return p;
         }
         return  null;
     }
@@ -612,14 +642,111 @@ public class easyManagerUtils {
         return null;
     }
 
-    public List<MyAccountInfo> getAccounts(Context context){
+    public List<Account> getAccounts(Context context){
         if(!isDead || skipError){
             TransmissionEntity transmissionEntity = new TransmissionEntity(null, null, context.getPackageName(), 0, 0);
             easyManagerClientEntity adben2 = new easyManagerClientEntity(null,transmissionEntity,easyManagerEnums.GET_ACCOUNT);
             putOptionOnServer(adben2);
-            return (List<MyAccountInfo>) getEasyManagerServiceEntity().getObject();
+            byte[] bb = (byte[]) getEasyManagerServiceEntity().getObject();
+            List<Account> p = baseAPI.Instance().bytesToList(bb,Account.CREATOR);
+            return p;
         }
         return null;
     }
+
+    public boolean isAppExists(Context context , String pkgname,int uid){
+        if(!isDead || skipError){
+            TransmissionEntity transmissionEntity = new TransmissionEntity(pkgname, null, context.getPackageName(), 0, uid);
+            easyManagerClientEntity adben2 = new easyManagerClientEntity(null,transmissionEntity,easyManagerEnums.IS_APP_EXISTS);
+            putOptionOnServer(adben2);
+            return (boolean) getEasyManagerServiceEntity().getObject();
+        }
+        return false;
+    }
+
+
+    public void createShortcutsSequentially(Context context, Activity activity, String pkgName){
+        ArrayList<Integer> uids = new ArrayList<>();
+        for (String cloneUser : getAppCloneUsers()) {
+            int uid = Integer.valueOf(cloneUser);
+            if (!cloneUser.equals(String.valueOf(getCurrentUserID())) && uid < 900) {
+                uids.add(uid);
+            }
+        }
+        createShortcutsSequentially(context,activity , uids, 0, pkgName);
+    }
+
+    public void createShortcutsSequentially(Context context, Activity activity,ArrayList<Integer> uids,String pkgName){
+        createShortcutsSequentially(context,activity, uids, 0, pkgName);
+    }
+
+    public void createShortcutsSequentially(Context context, Activity activity, ArrayList<Integer> uids, int index, String pkgName) {
+        if (index >= uids.size()) {
+            return;
+        }
+
+        final int uid = uids.get(index);
+        if(isAppExists(context,pkgName,uid)){
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                String action = "com.easymanager.SHORTCUT_CREATED_" + uid + "_" + System.currentTimeMillis();
+                Intent intent = new Intent(action);
+                intent.setPackage(context.getPackageName());
+
+                BroadcastReceiver receiver = new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        try {
+                            context.unregisterReceiver(this);
+                        } catch (Exception e) {
+                        }
+                        createShortcutsSequentially(context,activity,uids, index + 1, pkgName);
+                    }
+                };
+
+                IntentFilter filter = new IntentFilter(action);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    context.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED);
+                } else {
+                    context.registerReceiver(receiver, filter);
+                }
+
+                int flags = PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE;
+                PendingIntent pendingIntent = PendingIntent.getBroadcast(context, index, intent, flags);
+                MyLauncherUtils.Instance().createAppShortcut(context, activity, pkgName, uid, pendingIntent.getIntentSender());
+            } else {
+                MyLauncherUtils.Instance().createAppShortcut(context, activity, pkgName, uid);
+                createShortcutsSequentially(context,activity,uids, index + 1, pkgName);
+            }
+        }
+
+    }
+
+    public void startActivityAsUser(Context context , String pkgname,int uid){
+        if(!isDead || skipError){
+            TransmissionEntity transmissionEntity = new TransmissionEntity(pkgname, null, context.getPackageName(), 0, uid);
+            easyManagerClientEntity adben2 = new easyManagerClientEntity(null,transmissionEntity,easyManagerEnums.START_ACTIVITY_AS_USER);
+            putOptionOnServer(adben2);
+        }
+    }
+
+    public void testFun(Context context){
+        if(!isDead || skipError){
+            String pkgname = "mark.via";
+            int uid = 20;
+            TransmissionEntity transmissionEntity = new TransmissionEntity(pkgname, null, context.getPackageName(), 0, uid);
+            easyManagerClientEntity adben2 = new easyManagerClientEntity(null,transmissionEntity,easyManagerEnums.TEST_FUNCTION);
+            putOptionOnServer(adben2);
+            byte[] bb = (byte[]) getEasyManagerServiceEntity().getObject();
+            List<PackageInfo> p = baseAPI.Instance().bytesToList(bb,PackageInfo.CREATOR);
+            if(p != null){
+                System.out.println(p.size());
+                for (PackageInfo packageInfo : p) {
+                    System.out.println(packageInfo.packageName);
+                }
+            }
+
+        }
+    }
+
 
 }

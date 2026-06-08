@@ -1,5 +1,6 @@
 package com.easymanager.core.server;
 
+import android.accounts.Account;
 import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.os.Build;
@@ -10,13 +11,11 @@ import com.easymanager.core.api.FileCompressApi;
 import com.easymanager.core.api.FunctionAPI;
 import com.easymanager.core.api.PackageAPI;
 import com.easymanager.core.api.baseAPI;
-import com.easymanager.utils.ConfigUtils;
-import com.easymanager.entitys.MyAccountInfo;
+import com.easymanager.utils.ext.ConfigUtils;
 import com.easymanager.entitys.MyAppopsInfo;
-import com.easymanager.entitys.MyPackageInfo;
 import com.easymanager.core.entity.TransmissionEntity;
 import com.easymanager.core.utils.CMD;
-import com.easymanager.utils.FileTools;
+import com.easymanager.utils.ext.FileTools;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -27,12 +26,12 @@ import java.util.Map;
 
 public class easyManagerAPI extends baseAPI {
 
-    private PackageAPI packageAPI = new PackageAPI();
+    private PackageAPI packageAPI = PackageAPI.Instance();
     private AppopsAPI appopsAPI = new AppopsAPI();
     private FunctionAPI functionAPI = new FunctionAPI();
 
     private FileCompressApi fileCompressApi = new FileCompressApi();
-    private ConfigUtils myConfigUtils = new ConfigUtils();
+    private ConfigUtils myConfigUtils = ConfigUtils.Instance();
     private FileTools ft = myConfigUtils.ft;
 
     public IBinder getSystemService( String name) {
@@ -370,7 +369,7 @@ public class easyManagerAPI extends baseAPI {
     }
 
     public void compressFileByBackup(String fileEnd,String dirPath , String outPath ,String name ,Integer uid){
-        String head_path = outPath+"/"+name+"-"+uid;
+        String head_path = outPath+"/"+name+"-"+uid+"-"+getNowDateStr();
         if(fileEnd.equals("txz")){
             CompressOrDecompressFile(dirPath,head_path+".tar.xz",fileCompressApi.TAR_XZ_COMPRESS_TYPE);
         }else if(fileEnd.equals("tbz")){
@@ -406,21 +405,6 @@ public class easyManagerAPI extends baseAPI {
         }
     }
 
-
-
-    public void deleteConfig(String requpkg,int state,String path,String filename){
-        myConfigUtils.deleteConfig(requpkg, state, path, filename);
-    }
-
-    public void changeConfig(String requpkg,int newstate,String path,String filename){
-        myConfigUtils.changeConfig(requpkg, newstate, path, filename);
-    }
-
-    public void writeConfig(String requpkg,int state,String path,String filename){
-        myConfigUtils.writeConfig(requpkg, state, path, filename);
-    }
-
-
     public HashMap<String,Integer> getGrantUsers(){
         return myConfigUtils.getGrantUsers();
     }
@@ -442,7 +426,10 @@ public class easyManagerAPI extends baseAPI {
     }
 
     public int getMaxSupportedUsers(){
-        return packageAPI.getMaxSupportedUsers();
+        if(isRoot()){
+            return packageAPI.getMaxSupportedUsers();
+        }
+        return 1;
     }
 
     public String getSYSProp(String key) {
@@ -459,7 +446,11 @@ public class easyManagerAPI extends baseAPI {
     }
 
     public void createAppClone(){
-        packageAPI.createUser();
+        packageAPI.createUser(false);
+    }
+
+    public void createAppClone2(){
+        packageAPI.createUser(true);
     }
 
     public void startUser(int uid){
@@ -476,9 +467,9 @@ public class easyManagerAPI extends baseAPI {
         return packageAPI.getUsers();
     }
 
-    public List<MyPackageInfo> getInstalledPackages(int uid){return packageAPI.getInstalledPackages(uid);}
-
-    public MyPackageInfo getMyPackageInfo(String pkgname , int uid){return packageAPI.getMyPackageInfo(pkgname, uid);}
+    public byte[] getInstalledPackages(int uid){
+        return listToBytes(packageAPI.getInstalledPackages(uid));
+    }
 
     public int getComponentEnabledSetting(ComponentName componentName, int userId){return packageAPI.getComponentEnabledSetting(componentName,userId);}
 
@@ -501,8 +492,25 @@ public class easyManagerAPI extends baseAPI {
     public List<String> getActiveAdmins(int userid){
         return functionAPI.getActiveAdmins(userid);
     }
-    public List<MyAccountInfo> getAccounts(){
-        return packageAPI.getAccounts();
+    public byte[] getAccounts(){
+        List<Account> accounts = packageAPI.getAccounts();
+        return listToBytes(accounts);
+    }
+
+    public boolean isAppExists(String pkgname,int userid){
+        return packageAPI.isAppExists(pkgname, userid);
+    }
+
+    public void startActivityAsUser(String pkgname,int userid){
+        packageAPI.startActivityAsUser(pkgname,userid);
+    }
+
+    public byte[] getPackageInfo(String pkgname,int uid){
+        return parcelableToBytes(packageAPI.getPackageInfo(pkgname,uid));
+    }
+
+    public String getInstallerPackageName(String pkgname){
+        return packageAPI.getInstallerPackageName(pkgname);
     }
 
 }

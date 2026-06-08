@@ -12,8 +12,9 @@ import android.widget.TextView;
 
 import com.easymanager.R;
 import com.easymanager.entitys.PKGINFO;
-import com.easymanager.utils.FileTools;
-import com.easymanager.utils.PackageUtils;
+import com.easymanager.utils.ext.FileTools;
+import com.easymanager.utils.ext.PackageUtils;
+import com.easymanager.utils.ext.easyManagerUtils;
 
 import java.util.ArrayList;
 
@@ -67,7 +68,7 @@ public class PKGINFOAdapter extends BaseAdapter {
             text.setText(pkginfo.getAppname());
             text2.setText(pkginfo.getPkgname());
             text3.setText(pkginfo.getAppversionname());
-            text4.setText(new FileTools().getSize(pkginfo.getFilesize(),0));
+            text4.setText(FileTools.Instance().getSize(pkginfo.getFilesize(),0));
             text5.setText(pkginfo.getApkuid());
             checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
@@ -80,7 +81,11 @@ public class PKGINFOAdapter extends BaseAdapter {
             if(mode == 0){
 
                 try{
-                    imageView.setImageDrawable(pu.getPKGIcon(context,pkginfo.getPkgname()));
+                    if(easyManagerUtils.Instance().getCurrentUserID() == pkginfo.getUid()){
+                        imageView.setImageDrawable(pu.getPKGIcon(context,pkginfo.getPkgname()));
+                    }else{
+                        imageView.setImageDrawable(pu.getPKGIcon(context,pkginfo.getPkgname(),pkginfo.getUid()));
+                    }
                 }catch (Exception e){
                     imageView.setImageDrawable(context.getResources().getDrawable(R.drawable.manager_grant_app_foreground));
                 }

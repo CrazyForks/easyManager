@@ -15,14 +15,15 @@ public interface IPackageManager extends IInterface {
 
     IPackageInstaller getPackageInstaller()
             throws RemoteException;
-
+    String getInstallerPackageName(String packageName);
     ParceledListSlice getInstalledPackages(int flags, int userId);
     ParceledListSlice getInstalledPackages(long flags, int userId);
     PackageInfo getPackageInfo(String packageName, int flags, int userId);
     PackageInfo getPackageInfo(String packageName, long flags, int userId);
     PackageInfo getPackageInfo(String packageName, int flags);
 
-
+    ApplicationInfo getApplicationInfo(String packageName, int flags ,int userId);
+    ApplicationInfo getApplicationInfo(String packageName, long flags, int userId);
     //android4-5
     boolean addPermission(PermissionInfo info);
     void removePermission(String name);

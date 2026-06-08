@@ -17,11 +17,11 @@ import android.widget.TextView;
 
 import com.easymanager.R;
 import com.easymanager.adapters.RunCMDFilterAdapter;
-import com.easymanager.utils.MyActivityManager;
-import com.easymanager.utils.OtherTools;
+import com.easymanager.utils.ext.MyActivityManager;
+import com.easymanager.utils.ext.OtherTools;
 import com.easymanager.utils.base.DialogUtils;
 import com.easymanager.utils.dialog.HelpDialogUtils;
-import com.easymanager.utils.easyManagerUtils;
+import com.easymanager.utils.ext.easyManagerUtils;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -43,7 +43,7 @@ public class RunCommandLayoutActivity extends BaseActivity {
     private Button rclruncmdbt,rclstopcmdbt;
     private EditText rclet1;
     private TextView rcltv1;
-    private DialogUtils du = new DialogUtils();
+    private DialogUtils du = DialogUtils.Instance();
     private easyManagerUtils eu = du.easyMUtils;
 
     @Override
@@ -76,7 +76,7 @@ public class RunCommandLayoutActivity extends BaseActivity {
         if(isRoot || isADB || isDevice){
             scanLocalCMDFile();
         }
-        new HelpDialogUtils().showHelp(context,HelpDialogUtils.RUN_COMMAND_HELP,mode);
+        HelpDialogUtils.Instance().showHelp(context,HelpDialogUtils.RUN_COMMAND_HELP,mode);
     }
 
     private void btClicked() {
@@ -205,7 +205,7 @@ public class RunCommandLayoutActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        OtherTools otherTools = new OtherTools();
+        OtherTools otherTools = OtherTools.Instance();
         otherTools.addMenuBase(this,menu,mode);
         return super.onCreateOptionsMenu(menu);
     }
@@ -220,7 +220,7 @@ public class RunCommandLayoutActivity extends BaseActivity {
         }
 
         if(itemId == 5){
-            new HelpDialogUtils().showHelp(context,HelpDialogUtils.RUN_COMMAND_HELP,mode);
+            HelpDialogUtils.Instance().showHelp(context,HelpDialogUtils.RUN_COMMAND_HELP,mode);
         }
 
         if(itemId == 6){

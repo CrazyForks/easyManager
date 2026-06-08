@@ -1,4 +1,4 @@
-package com.easymanager.utils;
+package com.easymanager.utils.ext;
 
 import android.content.Context;
 import android.net.Uri;
@@ -39,7 +39,16 @@ public class ConfigUtils {
     public static final int MENU_IMPORT_CONFIG = 1001;
     public static final int MENU_EXPORT_CONFIG = 1002;
 
-    public FileTools ft = new FileTools();
+    public FileTools ft = FileTools.Instance();
+
+    private static ConfigUtils instance = null;
+
+    public static ConfigUtils Instance() {
+        if (instance == null) {
+            instance = new ConfigUtils();
+        }
+        return instance;
+    }
 
     // --- JSON Config (LightBreeze) ---
 

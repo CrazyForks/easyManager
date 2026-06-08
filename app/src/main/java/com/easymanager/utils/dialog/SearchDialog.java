@@ -18,6 +18,15 @@ import java.util.ArrayList;
 
 public class SearchDialog extends QueryDialog {
 
+    private static SearchDialog instance = null;
+
+    public static SearchDialog Instance() {
+        if(instance == null){
+            instance = new SearchDialog();
+        }
+        return instance;
+    }
+
     public void showRestorySearchViewDialog(Context context, Activity activity, ListView apllv1, ArrayList<PKGINFO> pkginfos, ArrayList<Boolean> checkboxs, int uid) {
         showSearchViewDialogCore(context,activity,apllv1,pkginfos,null,checkboxs,uid,2);
     }

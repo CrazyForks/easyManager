@@ -17,6 +17,16 @@ import java.io.OutputStream;
 
 public class FileUtils {
 
+    private static FileUtils instance = null;
+
+    public static FileUtils Instance(){
+        if(instance == null){
+            instance = new FileUtils();
+        }
+        return instance;
+    }
+
+
     //读取文件
     public String readFileToPath(String filePath) {
         StringBuilder stringBuilder = new StringBuilder();

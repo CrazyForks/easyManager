@@ -23,8 +23,8 @@ import com.easymanager.R;
 import com.easymanager.entitys.PKGINFO;
 import com.easymanager.enums.AppInfoEnums;
 import com.easymanager.enums.AppManagerEnum;
-import com.easymanager.utils.MyActivityManager;
-import com.easymanager.utils.OtherTools;
+import com.easymanager.utils.ext.MyActivityManager;
+import com.easymanager.utils.ext.OtherTools;
 import com.easymanager.utils.base.AppCloneUtils;
 import com.easymanager.utils.dialog.HelpDialogUtils;
 
@@ -64,7 +64,7 @@ public class AppInfoLayoutActivity extends BaseActivity {
     private int app_info_mode=-1;
     private int app_info_mode2=-1;
 
-    private AppCloneUtils acu = new AppCloneUtils();
+    private AppCloneUtils acu = AppCloneUtils.Instance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,8 +97,8 @@ public class AppInfoLayoutActivity extends BaseActivity {
         ail_show_details = findViewById(R.id.ail_show_details);
         aillv1 = findViewById(R.id.aillv1);
         ailsp1.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, getAppChoicesOPT()));
-        PKGINFO pkginfo = acu.getUd().packageUtils.getPKGINFO(context, pkgname);
-        Drawable pkginfoicon = acu.getUd().packageUtils.getPKGIcon(context,pkgname);
+        PKGINFO pkginfo = acu.getUd().packageUtils.getPKGINFOByUID(context, pkgname,uid);
+        Drawable pkginfoicon = acu.getUd().packageUtils.getPKGFileIcon(context, pkginfo.getApkpath());
         ailappicon.setImageDrawable(pkginfoicon);
         ailappname.setText(pkginfo.getAppname());
         ailapppkgname.setText(pkginfo.getPkgname());
@@ -109,7 +109,7 @@ public class AppInfoLayoutActivity extends BaseActivity {
 
         // Additional detailed info
         try {
-            PackageInfo packageInfo = getPackageManager().getPackageInfo(pkgname, PackageManager.GET_PERMISSIONS);
+            PackageInfo packageInfo = acu.getUd().packageUtils.getPackageInfoByUID(context,pkgname, uid);
             if (packageInfo != null) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
@@ -140,21 +140,32 @@ public class AppInfoLayoutActivity extends BaseActivity {
                         ailappabi.setText(Build.CPU_ABI + (Build.CPU_ABI2.equals("unknown") ? "" : ", " + Build.CPU_ABI2));
                     }
 
-                    String inst = getPackageManager().getInstallerPackageName(pkgname);
-                    installer = inst != null ? inst : "System/Direct";
+                    try{
+                        String inst = getPackageManager().getInstallerPackageName(pkgname);
+                        installer = inst != null ? inst : "System/Direct";
+                    }catch (Exception e){
+                        installer = "System/Direct";
+//                        e.printStackTrace();
+                    }
+
                     nativeLib = packageInfo.applicationInfo.nativeLibraryDir;
                     
                     // Construct external data path: /sdcard/Android/data/[pkgname]
-                    externalDataPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + pkgname;
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1){
+                        externalDataPath = "/storage/emulated/" + uid + "/Android/data/" + pkgname;
+                    }else{
+                        externalDataPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" + pkgname;
+                    }
+
                 }
             }
-        } catch (PackageManager.NameNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
         if(isRoot || isADB || isDevice){
             btClicked();
-            new HelpDialogUtils().showHelp(context,HelpDialogUtils.APP_INFO_HELP,mode);
+            HelpDialogUtils.Instance().showHelp(context,HelpDialogUtils.APP_INFO_HELP,mode);
         }else{
             acu.getUd().showInfoMsg(context,getLanStr(R.string.warning_tips),getLanStr(R.string.need_root_msg));
         }
@@ -216,7 +227,7 @@ public class AppInfoLayoutActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        new OtherTools().addMenuBase(this,menu,AppManagerEnum.APP_INFO_LAYOUT);
+        OtherTools.Instance().addMenuBase(this,menu,AppManagerEnum.APP_INFO_LAYOUT);
         getMenuInflater().inflate(R.menu.main,menu);
         return super.onCreateOptionsMenu(menu);
     }
@@ -262,7 +273,7 @@ public class AppInfoLayoutActivity extends BaseActivity {
         }
 
         if(itemId == 5){
-            new HelpDialogUtils().showHelp(context,HelpDialogUtils.APP_INFO_HELP,mode);
+            HelpDialogUtils.Instance().showHelp(context,HelpDialogUtils.APP_INFO_HELP,mode);
         }
 
         if(itemId == 6){

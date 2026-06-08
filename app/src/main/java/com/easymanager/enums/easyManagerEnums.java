@@ -67,4 +67,9 @@ public class easyManagerEnums {
     public static final int GET_DISALLOWED_PACKAGES = 54;
     public final static  int GET_SYS_PROP=55;
     public final static  int GET_ACCOUNT=56;
+    public final static  int APP_CLONE2=57;
+    public final static  int IS_APP_EXISTS=58;
+    public final static  int START_ACTIVITY_AS_USER=59;
+    public final static  int TEST_FUNCTION=44570;
+
 }

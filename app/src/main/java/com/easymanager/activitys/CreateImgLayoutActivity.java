@@ -19,8 +19,8 @@ import com.easymanager.R;
 import com.easymanager.enums.AppManagerEnum;
 import com.easymanager.utils.base.DialogUtils;
 import com.easymanager.utils.dialog.HelpDialogUtils;
-import com.easymanager.utils.MyActivityManager;
-import com.easymanager.utils.OtherTools;
+import com.easymanager.utils.ext.MyActivityManager;
+import com.easymanager.utils.ext.OtherTools;
 
 public class CreateImgLayoutActivity extends BaseActivity {
 
@@ -49,7 +49,7 @@ public class CreateImgLayoutActivity extends BaseActivity {
     private int FILE_NAME_TYPE_INDEX=0,FILE_SIZE_TYPE_INDEX=0;
 
 
-    private DialogUtils du = new DialogUtils();
+    private DialogUtils du = DialogUtils.Instance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,7 +106,7 @@ public class CreateImgLayoutActivity extends BaseActivity {
             cilcreateimg.setText(getLanStr(R.string.apply_del_x));
         }
         btClicked();
-        new HelpDialogUtils().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
+        HelpDialogUtils.Instance().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
     }
 
     private void btClicked() {
@@ -202,7 +202,7 @@ public class CreateImgLayoutActivity extends BaseActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        OtherTools otherTools = new OtherTools();
+        OtherTools otherTools = OtherTools.Instance();
         otherTools.addMenuBase(this,menu,mode);
         return super.onCreateOptionsMenu(menu);
     }
@@ -217,7 +217,7 @@ public class CreateImgLayoutActivity extends BaseActivity {
         }
 
         if(itemId == 5){
-            new HelpDialogUtils().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
+            HelpDialogUtils.Instance().showHelp(context,HelpDialogUtils.APP_MANAGE_HELP,mode);
         }
 
         if(itemId == 6){

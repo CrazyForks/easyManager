@@ -29,7 +29,16 @@ import java.util.Calendar;
 
 public class PackageDialog extends DialogUtils {
 
-    public void showProcessBarDialogByCMD(Context context, ArrayList<PKGINFO> list, int appPermission, int APP_PERMIS_INDEX, String opt_str, String title, String text,int uid ){
+    private static PackageDialog instance = null;
+
+    public static PackageDialog Instance() {
+        if(instance == null){
+            instance = new PackageDialog();
+        }
+        return instance;
+    }
+
+    public void showProcessBarDialogByCMD(Context context, ArrayList<PKGINFO> list, int appPermission, int APP_PERMIS_INDEX, String opt_str, String title, String text, int uid ){
         int size = list.size();
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(title);

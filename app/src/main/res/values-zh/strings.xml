@@ -522,4 +522,7 @@
     <string name="perm_network">网络</string>
     <string name="perm_wifi">Wi-Fi</string>
     <string name="help_layout_donate">捐赠支持</string>
+    <string name="app_clone_manager_clone_work_profile">工作空间</string>
+    <string name="app_clone_manager_clone_work_clone">克隆空间</string>
+    <string name="create_shortcut">创建桌面快捷方式</string>
 </resources>

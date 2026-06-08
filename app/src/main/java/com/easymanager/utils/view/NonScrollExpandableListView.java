@@ -1,4 +1,4 @@
-package com.easymanager.utils;
+package com.easymanager.utils.view;
 
 import android.content.Context;
 import android.util.AttributeSet;

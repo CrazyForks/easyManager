@@ -8,13 +8,13 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.easymanager.R;
-import com.easymanager.utils.TextUtils;
+import com.easymanager.utils.ext.TextUtils;
 
 import java.lang.reflect.Field;
 
 public class DialogBaseUtils {
 
-    public TextUtils tu = new TextUtils();
+    public TextUtils tu = TextUtils.Instance();
 
     public View getCustomeDialog(Context con,String title , String msg){
         // 创建自定义布局的 AlertDialog

@@ -1,18 +1,17 @@
-package com.easymanager.utils;
+package com.easymanager.utils.ext;
 
 import android.app.Activity;
 import android.app.AppOpsManager;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.graphics.drawable.Drawable;
 
 import com.easymanager.core.enums.AppopsPermissionStr;
-import com.easymanager.entitys.MyActivityInfo;
-import com.easymanager.entitys.MyApplicationInfo;
 import com.easymanager.entitys.MyAppopsInfo;
-import com.easymanager.entitys.MyPackageInfo;
 import com.easymanager.core.entity.TransmissionEntity;
 import com.easymanager.entitys.PKGINFO;
 import com.easymanager.enums.AppManagerEnum;
@@ -33,7 +32,16 @@ public class PackageUtils {
     public  Integer QUERY_ALL_DISABLE_PKG=1;
     public  Integer QUERY_ALL_DEFAULT_PKG=4;
 
-    private easyManagerUtils ee = new easyManagerUtils();
+    private easyManagerUtils ee = easyManagerUtils.Instance();
+
+    private static PackageUtils instance = null;
+
+    public static PackageUtils Instance(){
+        if(instance == null){
+            instance = new PackageUtils();
+        }
+        return instance;
+    }
 
     public PackageUtils(){}
 
@@ -101,6 +109,12 @@ public class PackageUtils {
         return packageInfo.applicationInfo.loadIcon(packageManager);
     }
 
+    public Drawable getPKGIcon(Context context , String pkgname,int uid){
+        PackageManager packageManager = getPackageManager(context);
+        PackageInfo packageInfo = getPackageInfoByUID(context, pkgname, uid);
+        return packageInfo.applicationInfo.loadIcon(packageManager);
+    }
+
     public Drawable getPKGFileIcon(Context context , String filePath){
         PackageManager packageManager = getPackageManager(context);
         PackageInfo packageInfo = packageManager.getPackageArchiveInfo(filePath, PackageManager.GET_ACTIVITIES);
@@ -110,28 +124,26 @@ public class PackageUtils {
     public PKGINFO getPKGINFO(Context context , String pkgname){
         PackageManager packageManager = getPackageManager(context);
         PackageInfo packageInfo = getPackageInfo(context, pkgname, 0);
-        return getPKGINFO(packageManager,packageInfo,packageInfo.applicationInfo.sourceDir);
+        return getPKGINFO(packageManager,packageInfo,packageInfo.applicationInfo.sourceDir, ee.getCurrentUserID());
     }
 
-    public PKGINFO getPKGINFO(PackageManager packageManager,PackageInfo packageInfo , String filePath){
+    public PKGINFO getPKGINFOByUID(Context context , String pkgname,int uid){
+        PackageManager packageManager = getPackageManager(context);
+        PackageInfo packageInfo = getPackageInfoByUID(context,pkgname,uid);
+        return getPKGINFO(packageManager,packageInfo,packageInfo.applicationInfo.sourceDir,uid);
+    }
+
+    public PKGINFO getPKGINFO(PackageManager packageManager,PackageInfo packageInfo , String filePath,int uid){
         try {
             ApplicationInfo applicationInfo = packageInfo.applicationInfo;
             applicationInfo.sourceDir=filePath;
             applicationInfo.publicSourceDir = filePath;
             Long filesieze = applicationInfo.sourceDir==null? 0: new File(applicationInfo.sourceDir).length();
-            return new PKGINFO(applicationInfo.packageName, applicationInfo.loadLabel(packageManager).toString(), applicationInfo.sourceDir,applicationInfo.uid+"",packageInfo.versionName,filesieze) ;
+            PKGINFO pkginfo = new PKGINFO(applicationInfo.packageName, applicationInfo.loadLabel(packageManager).toString(), applicationInfo.sourceDir, applicationInfo.uid + "", packageInfo.versionName, filesieze);
+            pkginfo.setUid(uid);
+            return pkginfo;
         }catch (Exception e){
             return null;
-        }
-    }
-
-    public PKGINFO getPKGINFOByUID(PackageManager packageManager,MyPackageInfo myPackageInfo){
-        try {
-            PackageInfo packageInfo = packageManager.getPackageInfo(myPackageInfo.packageName, 0);
-            return getPKGINFO(packageManager,packageInfo,packageInfo.applicationInfo.sourceDir);
-        }catch (Exception e){
-            Long filesieze = myPackageInfo.myapplicationInfo.sourceDir==null? 0: new File(myPackageInfo.myapplicationInfo.sourceDir).length();
-            return new PKGINFO(myPackageInfo.packageName, myPackageInfo.packageName, myPackageInfo.myapplicationInfo.sourceDir,myPackageInfo.myapplicationInfo.uid+"",myPackageInfo.versionName,filesieze);
         }
     }
 
@@ -139,15 +151,7 @@ public class PackageUtils {
         if(checkboxs != null){
             checkboxs.add(false);
         }
-        pkginfos.add(getPKGINFO(packageManager,packageInfo,packageInfo.applicationInfo.sourceDir));
-    }
-
-    public int getPkgUid(Context context , String pkgname){
-        try {
-            return getPackageManager(context).getApplicationInfo(pkgname,0).uid;
-        } catch (PackageManager.NameNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        pkginfos.add(getPKGINFO(packageManager,packageInfo,packageInfo.applicationInfo.sourceDir, ee.getCurrentUserID()));
     }
 
     public void appInfoAdd(PackageManager packageManager,PackageInfo packageInfo,ArrayList<PKGINFO> pkginfos , ArrayList<Boolean> checkboxs,Integer state){
@@ -206,9 +210,9 @@ public class PackageUtils {
     }
 
     public void queryPKGSCoreByUID(int uid,Activity activity , ArrayList<PKGINFO> pkginfos , ArrayList<Boolean> checkboxs,boolean listDisabled , boolean listEnabled ,boolean listSystem ,boolean listThirdParty  ){
-        List<MyPackageInfo> installedPackages = ee.getInstalledPackages(new TransmissionEntity(null,null,activity.getPackageName(),0,uid));
-        for (MyPackageInfo packageInfo : installedPackages) {
-            MyApplicationInfo myapplicationInfo = packageInfo.myapplicationInfo;
+        List<PackageInfo> installedPackages = ee.getInstalledPackages(new TransmissionEntity(null,null,activity.getPackageName(),0,uid));
+        for (PackageInfo packageInfo : installedPackages) {
+            ApplicationInfo myapplicationInfo = packageInfo.applicationInfo;
 
             // 提前计算好状态，代码更清晰
             boolean isSystem = (myapplicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
@@ -242,21 +246,30 @@ public class PackageUtils {
 
             // ====================== 满足条件就添加（只执行一次！） ======================
             if (match) {
-                appInfoAdd(activity.getPackageManager(), packageInfo, pkginfos, checkboxs);
+                appInfoAdd(activity.getPackageManager(), packageInfo, pkginfos, checkboxs,uid);
             }
         }
 
         sortPKGINFOS(pkginfos);
     }
 
-    public void appInfoAdd(PackageManager packageManager,MyPackageInfo packageInfo, ArrayList<PKGINFO> pkginfos, ArrayList<Boolean> checkboxs) {
+    public void appInfoAdd(PackageManager packageManager,PackageInfo packageInfo, ArrayList<PKGINFO> pkginfos, ArrayList<Boolean> checkboxs,int uid) {
         if(checkboxs != null){
             checkboxs.add(false);
         }
 
-        PKGINFO pkginfoByUID = getPKGINFOByUID(packageManager, packageInfo);
-        if(pkginfoByUID != null){
-            pkginfos.add(pkginfoByUID);
+        PKGINFO pkginfo = null;
+
+        try {
+            pkginfo = getPKGINFO(packageManager,packageInfo,packageInfo.applicationInfo.sourceDir,uid);
+        }catch (Exception e){
+            Long filesieze = packageInfo.applicationInfo.sourceDir==null? 0: new File(packageInfo.applicationInfo.sourceDir).length();
+            pkginfo = new PKGINFO(packageInfo.packageName, packageInfo.packageName, packageInfo.applicationInfo.sourceDir,packageInfo.applicationInfo.uid+"",packageInfo.versionName,filesieze);
+            pkginfo.setUid(uid);
+        }
+
+        if(pkginfo != null){
+            pkginfos.add(pkginfo);
         }
 
     }
@@ -279,16 +292,12 @@ public class PackageUtils {
     }
 
 
-    public int getPKGVersiongCode(Context context , String pkgname){
-        try {
-            return context.getApplicationContext().getPackageManager().getPackageInfo(pkgname,0).versionCode;
-        } catch (PackageManager.NameNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public PackageManager getPackageManager(Context context){
         return context.getPackageManager();
+    }
+
+    public PackageInfo getPackageInfoByUID(Context context, String pkgname ,int uid) {
+        return ee.getPackageInfo(context,pkgname,uid);
     }
 
     public PackageInfo getPackageInfo(PackageManager pm , String pkgname , Integer mode) {
@@ -311,26 +320,37 @@ public class PackageUtils {
     //app组件禁用是会同步到主用户的,因为应用主程序不会额外重新安装，只会在对应的其它分身用户那里新建一个数据缓存文件夹
     public void getPKGInfoCore(Context context , String pkgname, ArrayList<String> list , ArrayList<Boolean> checkboxs,ArrayList<Boolean> switbs,Integer mode,Integer uid){
         clearList(list,checkboxs,switbs);
-        MyPackageInfo myPackageInfo = ee.getMyPackageInfo(new TransmissionEntity(pkgname, null, context.getPackageName(), 0, uid));
+        PackageInfo myPackageInfo = getPackageInfoByUID(context,pkgname,uid);
         if(myPackageInfo != null){
             ArrayList<String> mainActivityList = new ArrayList<>();
             ArrayList<String> otherActivityList = new ArrayList<>();
             ArrayList<Boolean> mainBoolActivityList = new ArrayList<>();
             ArrayList<Boolean> otherBoolActivityList = new ArrayList<>();
             if(mode == 0 || mode == 2 || mode == 3){
-                MyActivityInfo[] aa = myPackageInfo.getMyActivityInfos();
+                ActivityInfo[] aa = myPackageInfo.activities;
                 if(mode ==2){
-                    aa = myPackageInfo.getMyServices();
+                    aa = null;
+                    ServiceInfo[] aa1 = myPackageInfo.services;
+                    if(aa1 != null && aa1.length > 0){
+                        ActivityInfo aa2[] = new ActivityInfo[aa1.length];
+                        for (int i = 0; i < aa1.length; i++) {
+                            aa2[i] = new ActivityInfo();
+                            aa2[i].exported = aa1[i].exported;
+                            aa2[i].name = aa1[i].name;
+                            aa2[i].enabled = aa1[i].enabled;
+                        }
+                        aa = aa2;
+                    }
                 }
 
                 if(mode == 3){
-                    aa = myPackageInfo.getMyReceivers();
+                    aa = myPackageInfo.receivers;
                 }
 
                 if(aa != null){
-                    for (MyActivityInfo activity : aa) {
+                    for (ActivityInfo activity : aa) {
                         int enabledSetting = ee.getComponentEnabledSetting(context,pkgname,activity.name,uid);
-                        if(activity.isExported()){
+                        if(activity.exported){
                             mainActivityList.add(activity.name);
                         }else{
                             otherActivityList.add(activity.name);
@@ -449,9 +469,9 @@ public class PackageUtils {
     public void queryUninstalledPKGSByUID(Integer uid, Activity activity, ArrayList<PKGINFO> pkginfos, ArrayList<Boolean> checkboxs) {
         clearList(pkginfos,checkboxs);
 
-        List<MyPackageInfo> installedPackages = ee.getInstalledPackages(new TransmissionEntity(null,null,activity.getPackageName(),0,uid));
-        for (MyPackageInfo packageInfo : installedPackages) {
-            MyApplicationInfo myapplicationInfo = packageInfo.myapplicationInfo;
+        List<PackageInfo> installedPackages = ee.getInstalledPackages(new TransmissionEntity(null,null,activity.getPackageName(),0,uid));
+        for (PackageInfo packageInfo : installedPackages) {
+            ApplicationInfo myapplicationInfo = packageInfo.applicationInfo;
             try {
                 PackageInfo p = activity.getPackageManager().getPackageInfo(packageInfo.packageName,0);
             }catch (Exception e){
@@ -461,8 +481,7 @@ public class PackageUtils {
                     if(apkPath.exists()){
                         try {
                             PackageInfo packageArchiveInfo = activity.getPackageManager().getPackageArchiveInfo(apkPathStr, 0);
-
-                            appInfoAdd(activity.getPackageManager(), packageInfo, pkginfos, checkboxs);
+                            appInfoAdd(activity.getPackageManager(), packageInfo, pkginfos, checkboxs,uid);
                         }catch (Exception e2){
 
                         }
