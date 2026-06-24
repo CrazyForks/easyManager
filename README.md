@@ -26,11 +26,11 @@
 从V1.2.8b版本开始，该项目分成两个版本，分开维护和更新，分别是 [轻风免root版本](https://github.com/MrsEWE44/easyManager/tree/md5) 和 [轻风完整版](https://github.com/MrsEWE44/easyManager/tree/master)
 
 
-- V1.3.3a
+- V1.3.3b
 
-1.修复应用备份和恢复的逻辑判断.
+1.修复U盘模式在高版本安卓上的问题.
 
-2.修改版本号为1.3.3a.
+2.修改版本号为1.3.3b.
 
 
 ### 软件截图:

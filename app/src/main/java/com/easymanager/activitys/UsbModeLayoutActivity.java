@@ -100,6 +100,9 @@ public class UsbModeLayoutActivity extends BaseActivity {
                             case 3:
                                 acu.runCMD(mode3(s));
                                 break;
+                            case 4:
+                                acu.runCMD(mode4(s));
+                                break;
                         }
                         break;
                     }
@@ -175,7 +178,7 @@ public class UsbModeLayoutActivity extends BaseActivity {
 
     //Android9-10实现
     private String mode2(String filePath){
-        return "cd "+config_path1+" && echo -n 'msc' >configs/b.1/strings/0x409/configuration &&  rm -rf configs/b.1/f* && ln -s functions/mass_storage.0 configs/b.1/f1 && echo -n '"+filePath+"' >configs/b.1/f1/lun.0/file && setprop sys.usb.config mass_storage ";
+        return "cd "+config_path1+" && echo -n 'msc' >configs/b.1/strings/0x409/configuration &&  rm -rf configs/b.1/f* && ln -s functions/mass_storage.0 configs/b.1/f1 && echo -n '"+filePath+"' >configs/b.1/f1/lun.0/file && setprop sys.usb.config mass_storage";
     }
 
     //Android8以前实现，未测试
@@ -183,10 +186,17 @@ public class UsbModeLayoutActivity extends BaseActivity {
         return "cd "+config_path2 +" && echo -n 0 > enable && echo -n '"+filePath+"' > f_mass_storage/lun/file && echo -n 'mass_storage' >functions && echo -n 1 >enable";
     }
 
+    //Android16实现,也许Android10以上版本也需要?
+    private String mode4(String filePath){
+        return "cd "+config_path1+" && echo -n 'msc' >configs/b.1/strings/0x409/configuration &&  rm -rf configs/b.1/f* && ln -s functions/mass_storage.0 configs/b.1/f1 && echo -n '"+filePath+"' >configs/b.1/f1/lun.0/file";
+    }
+
 
     private String autoMode(String filePath){
         int sdkInt = Build.VERSION.SDK_INT;
-        if (sdkInt >= Build.VERSION_CODES.P) {
+        if(sdkInt >= Build.VERSION_CODES.BAKLAVA){
+            return mode4(filePath);
+        }else if (sdkInt >= Build.VERSION_CODES.P) {
             return mode2(filePath);
         }else {
             return mode3(filePath);
@@ -194,7 +204,7 @@ public class UsbModeLayoutActivity extends BaseActivity {
     }
     private String[] getMountModeOPT(){
         return new String[]{getLanStr(R.string.mount_local_img_item_auto),getLanStr(R.string.mount_local_img_item_mode1)
-        ,getLanStr(R.string.mount_local_img_item_mode2),getLanStr(R.string.mount_local_img_item_mode3)};
+        ,getLanStr(R.string.mount_local_img_item_mode2),getLanStr(R.string.mount_local_img_item_mode3),getLanStr(R.string.mount_local_img_item_mode4)};
     }
 
     private String getLanStr(int id){

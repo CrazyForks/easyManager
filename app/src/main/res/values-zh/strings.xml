@@ -525,4 +525,5 @@
     <string name="app_clone_manager_clone_work_profile">工作空间</string>
     <string name="app_clone_manager_clone_work_clone">克隆空间</string>
     <string name="create_shortcut">创建桌面快捷方式</string>
+    <string name="mount_local_img_item_mode4">模式4</string>
 </resources>

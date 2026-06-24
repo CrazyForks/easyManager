@@ -348,4 +348,5 @@
     <string name="app_clone_manager_clone_work_profile">Work Profile</string>
     <string name="app_clone_manager_clone_work_clone">Clone Profile</string>
     <string name="create_shortcut">Create Shortcut</string>
+    <string name="mount_local_img_item_mode4">模式4</string>
 </resources>

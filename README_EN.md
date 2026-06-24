@@ -25,11 +25,11 @@ Unlike them, Light Breeze uses Socket-based TCP communication to execute operati
 Starting with version V1.2.8b, this project is divided into two versions, which are maintained and updated separately: [Light Breeze No-Root Version](https://github.com/MrsEWE44/easyManager/tree/md5) and [Light Breeze Full Version](https://github.com/MrsEWE44/easyManager/tree/master).
 
 
-- V1.3.3a
+- V1.3.3b
 
-1.Fixed the logic for app backup and restore.
+1.Fixed the issue with USB drive mode on higher versions of Android.
 
-2.Updated the version number to 1.3.3a.
+2.Updated the version number to 1.3.3b.
 
 
 ### Software screenshots:
