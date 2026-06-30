@@ -75,9 +75,17 @@ public class startAdbService {
                                             break;
                                         case easyManagerEnums.SET_APPOPS:
                                             if(managerAPI.isRoot() || managerAPI.isADB()){
-                                                if(entity.getOpsmode() == AppopsPermissionStr.SENSORSSCAN && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
-                                                    String enable_str = managerAPI.isAppopsAllow(entity.getOpmodestr()) ? "active":"idle";
-                                                    String cmd_str = "cmd sensorservice set-uid-state " +entity.getPkgname() + " " + enable_str+" --user " + entity.getUid();
+                                                if(entity.getOpsmode() == AppopsPermissionStr.SENSORSSCAN && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+
+                                                    boolean isAllow = managerAPI.isAppopsAllow(entity.getOpmodestr());
+                                                    String cmd_str = "dumpsys sensorservice "+(isAllow?"enable" : "restrict "+entity.getPkgname());
+
+                                                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R){
+                                                        String enable_str = isAllow ? "active":"idle";
+                                                        cmd_str = "cmd sensorservice set-uid-state " +entity.getPkgname() + " " + enable_str+" --user " + entity.getUid();
+                                                    }
+
+
                                                     CMD cmd = sendCMD(cmd_str);
                                                 }else{
                                                     managerAPI.setAppopsMode(entity);

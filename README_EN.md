@@ -22,14 +22,23 @@ Backup & restore, unlimit app cloning, network control, and app service/activity
 Light Breeze’s working principle references excellent open-source projects including Shizuku, AppOps, Hail, Dhizuku, and InstallerX. Similar to these tools, Light Breeze requires users to run a command to start an independent background shell or root shell process for normal operation.
 Unlike them, Light Breeze uses Socket-based TCP communication to execute operations by sending instructions and parameters. All actions run within an isolated shell, and you can stop the service at any time.
 
+What can it do? How does it make things easier for you?
+1.It allows you to uninstall certain pre-installed system apps—even those that cannot be removed via standard adb shell commands—without requiring root access; it also supports reinstalling them later. It is compatible with systems from brands such as Vivo, iQOO, Oppo, OnePlus, Realme, Honor, and Samsung.
+2.On Android versions prior to Android 10, it allows you to manage sensor permissions for individual apps and disable them without root access, helping to mitigate the annoyance of "shake-to-trigger" ads.
+3.With root access, it can turn your phone into a bootable drive, enabling you to install operating systems—such as Windows or Linux—on a computer.
+4.With root access, it bypasses system limits on the number of app clones, effectively allowing for unlimited cloning; each clone operates independently and consumes minimal system resources.
+5.It allows you to share the contents of a folder over a local network via Wi-Fi, making it easy for others to access and download the files.
+
 Starting with version V1.2.8b, this project is divided into two versions, which are maintained and updated separately: [Light Breeze No-Root Version](https://github.com/MrsEWE44/easyManager/tree/md5) and [Light Breeze Full Version](https://github.com/MrsEWE44/easyManager/tree/master).
 
 
-- V1.3.3b
+- V1.3.3c
 
-1.Fixed the issue with USB drive mode on higher versions of Android.
+1.Improved sensor access controls for Android versions prior to Android 11.
 
-2.Updated the version number to 1.3.3b.
+2.Adjusted the destination screen for software update checks.
+
+3.Updated the version number to 1.3.3c.
 
 
 ### Software screenshots:

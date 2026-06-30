@@ -76,8 +76,8 @@ public class NetUtilsDialog extends DialogUtils {
     }
 
     public void openUrlWithBrowser(Context context){
-        String cn_download_link = "https://gitee.com/SorryMyLife/easyManager/raw/master/app/release/easyManager_release.apk";
-        String global_download_link = "https://github.com/MrsEWE44/easyManager/raw/master/app/release/easyManager_release.apk";
+        String cn_download_link = "https://gitee.com/SorryMyLife/easyManager/releases";
+        String global_download_link = "https://github.com/MrsEWE44/easyManager/releases";
         String language = context.getResources().getConfiguration().locale.getLanguage();
         openUrlWithBrowser(context,language.equals("zh")?cn_download_link:global_download_link);
     }
